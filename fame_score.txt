@@ -1,0 +1,45 @@
+FAME SCORE — TECHNIQUE DOCUMENTATION
+======================================
+
+Purpose:
+  Give each movie a "fame" score that reflects how mainstream/well-known it is,
+  WITHOUT relying on the dataset's unreliable popularity or vote_count columns
+  (which have inconsistent scraping artifacts and mislead the ranker).
+
+Technique: Star-Power Frequency Heuristic
+------------------------------------------
+The core idea is:  movies featuring actors and directors who appear MANY TIMES
+across the dataset are more likely to be mainstream, well-known productions.
+Obscure, low-budget, or poorly-catalogued films will feature unknowns who barely
+appear elsewhere.
+
+Step 1 — Count appearances across the whole dataset
+  • director_count[D]   = number of movies director D appears in
+  • actor_count[A]      = number of movies actor A appears in
+
+Step 2 — Log-normalise (to reduce outlier dominance)
+  • dir_score    = log1p(director_count[D])
+  • cast_freqs   = [log1p(actor_count[A]) for A in top-5 cast]
+  • cast_score   = mean of top-3 cast_freqs   (top 3 = most prominent actors)
+
+Step 3 — Combine
+  • raw_fame = 0.55 × cast_score  +  0.45 × dir_score
+  (cast gets slightly higher weight since blockbusters are star-driven)
+
+Step 4 — MinMaxScaler → [0, 1]
+  Final fame_score is normalised across all movies in the dataset.
+
+Usage in the recommender:
+  • final_score = 0.92 × similarity_score  +  0.08 × fame_score
+  (fame is a tie-breaker / quality gate, NOT the primary ranking signal)
+  • Very low fame movies (bottom 5%) are gated out when enough popular
+    alternatives exist — prevents obscure/questionable titles from surfacing.
+  • "Sort by Popularity" in the UI uses fame_score, NOT the DB popularity column.
+
+Why NOT use vote_count / popularity:
+  • vote_count is inconsistent — many real blockbusters have very low counts
+    in this scraped dataset (e.g. single-digit votes for major TMDB entries).
+  • popularity column is a TMDB internal metric that changes over time and
+    favours recently-trending content, not cultural fame.
+  • Star-power frequency is stable, reproducible from the dataset alone,
+    and correlates well with real-world recognition.

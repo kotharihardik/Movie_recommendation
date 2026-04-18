@@ -1,0 +1,129 @@
+[
+  {
+    "movie_id": "263471",
+    "title": "I",
+    "original_title": "ஐ",
+    "language": "ta",
+    "year": 2015,
+    "vote_average": 6.732,
+    "vote_count": 127,
+    "director": "Shankar",
+    "cast": [
+      "Vikram",
+      "Amy Jackson",
+      "Suresh Gopi",
+      "Upen Patel",
+      "Ramkumar Ganesan"
+    ],
+    "genres": [
+      "Thriller",
+      "Action",
+      "Romance"
+    ],
+    "poster_path": "/itDqpdxcI5urnL9KJGJiOusn5g9.jpg",
+    "tagline": "",
+    "runtime": 170,
+    "overview": "A deformed hunchback kidnaps a bride and holds her hostage while his connection to her and his targets is revealed in a series of flashbacks that unfold as he starts seeking revenge."
+  },
+  {
+    "movie_id": "1137036",
+    "title": "Night Encounters",
+    "original_title": "Night Encounters",
+    "language": "hi",
+    "year": 2023,
+    "vote_average": 10.0,
+    "vote_count": 1,
+    "director": "Simmer Bhatia",
+    "cast": [
+      "Ankur Rathee",
+      "Anisa Butt",
+      "Sonia Rathee",
+      "Simmer Bhatia",
+      "Dheeraj Pandey"
+    ],
+    "genres": [
+      "Horror"
+    ],
+    "poster_path": "/yQ1syjuyPOUEn9PppO3JitGd40F.jpg",
+    "tagline": "",
+    "runtime": 86,
+    "overview": "The line between the supernatural and guerrilla filmmaking becomes blurred when a director chooses an abandoned hotel to shoot her horror movie."
+  },
+  {
+    "movie_id": "1265827",
+    "title": "Retro",
+    "original_title": "ரெட்ரோ",
+    "language": "ta",
+    "year": 2025,
+    "vote_average": 6.389,
+    "vote_count": 36,
+    "director": "Karthik Subbaraj",
+    "cast": [
+      "Suriya",
+      "Pooja Hegde",
+      "Joju George",
+      "Jayaram",
+      "Vidhu"
+    ],
+    "genres": [
+      "Romance",
+      "Action",
+      "Drama",
+      "Crime"
+    ],
+    "poster_path": "/pJPK57REXsaLydpOPgHwWAQMdqz.jpg",
+    "tagline": "Love. Laughter. War.",
+    "runtime": 162,
+    "overview": "A man with a violent past seeks a fresh start, but the life he left behind resurfaces, forcing him to face old conflicts and redefine his future."
+  },
+  {
+    "movie_id": "1616817",
+    "title": "Members of the Problematic Family",
+    "original_title": "சிக்கலான குடும்பத்தின் உறுப்பினர்கள்",
+    "language": "ta",
+    "year": 2026,
+    "vote_average": 9.0,
+    "vote_count": 1,
+    "director": "R Gowtham",
+    "cast": [
+      "Karuththadaiyaan",
+      "Ara. Ajith Kumar",
+      "Kanchana Senthil",
+      "T Paneer Selvam",
+      "Saravana Siddharth"
+    ],
+    "genres": [
+      "Drama",
+      "Family"
+    ],
+    "poster_path": "/AoOxsu7mKKUDiLWyTqqsBbpz5Nh.jpg",
+    "tagline": "",
+    "runtime": 105,
+    "overview": "A man dies young. Funeral rites – yes; mourning – not so much. A death that stirs and shakes things up. A film that shows the violence of family relationships with uncanny subtlety and verve, the pendulum of void and solace."
+  },
+  {
+    "movie_id": "1219158",
+    "title": "Lover",
+    "original_title": "லவ்வர்",
+    "language": "ta",
+    "year": 2024,
+    "vote_average": 7.3,
+    "vote_count": 14,
+    "director": "Prabhuram Vyas",
+    "cast": [
+      "Manikandan",
+      "Sri Gouri Priya Reddy",
+      "Kanna Ravi",
+      "Harini Sundararajan",
+      "Harish Kumar"
+    ],
+    "genres": [
+      "Romance",
+      "Drama"
+    ],
+    "poster_path": "/5rN7wzvM9oAR35sQVNUt8JuTDFS.jpg",
+    "tagline": "",
+    "runtime": 145,
+    "overview": "An alcoholic designer struggles to save his six-year relationship while facing personal challenges and misunderstandings. As their bond is tested, he begins to confront his past and question whether love alone is enough to hold them together."
+  }
+]
