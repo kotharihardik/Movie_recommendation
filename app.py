@@ -154,6 +154,7 @@ def main() -> None:
                     top_n          = top_n,
                     min_rating     = filters["min_rating"],
                     decade_filter  = filters["decade_filter"],
+                    include_old_movies = filters.get("include_old_movies", False),
                     diversify      = filters["diversify"],
                     df             = df,
                 )

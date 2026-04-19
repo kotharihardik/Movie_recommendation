@@ -979,6 +979,7 @@ def get_recommendations(
     top_n:          int  = 10,
     min_rating:     float = 5.0,       # kept for UI compat; treated as min vote_average
     decade_filter:  list = None,
+    include_old_movies: bool = False,
     diversify:      bool = False,
     df:             Optional[pd.DataFrame] = None,  # passed from app if needed
 ) -> tuple[list[RecommendedMovie], str]:

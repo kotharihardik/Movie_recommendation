@@ -784,12 +784,22 @@ def render_sidebar_filters() -> dict:
         language_codes = [lang_map[l] for l in selected] or ["hi", "ta", "te", "ml", "kn"]
 
     st.markdown("---")
+    st.markdown('<div class="cm-label">🎞️ Old Movies</div>', unsafe_allow_html=True)
+    include_old_movies = st.toggle(
+        "Include old movies (1990s / classic)",
+        value=False,
+        key="include_old_movies",
+        help="Off: use recent years by default. On: include older decades.",
+    )
+
+    st.markdown("---")
     st.markdown('<div class="cm-label">📅 Decade</div>', unsafe_allow_html=True)
     all_decades = ["2020s", "2010s", "2000s", "1990s", "Classic (<1990)"]
+    default_decades = all_decades if include_old_movies else ["2020s", "2010s"]
     decade_filter = st.multiselect(
         "Decade",
         options=all_decades,
-        default=all_decades,
+        default=default_decades,
         key="decade_filter",
         label_visibility="collapsed",
     )
@@ -816,6 +826,7 @@ def render_sidebar_filters() -> dict:
     return {
         "language_codes": language_codes,
         "decade_filter":  decade_filter if decade_filter else all_decades,
+        "include_old_movies": include_old_movies,
         "min_rating":     min_rating,
         "diversify":      diversify,
     }
