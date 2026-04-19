@@ -333,15 +333,7 @@ def render_header() -> None:
 
 
 def render_footer() -> None:
-    st.markdown("""
-    <div class="cm-footer">
-        Powered by <strong>sentence-transformers/all-MiniLM-L6-v2</strong> &nbsp;•&nbsp;
-        <strong>ChromaDB</strong> &nbsp;•&nbsp;
-        <strong>TMDB Dataset</strong> &nbsp;•&nbsp;
-        <strong>Claude AI</strong><br/>
-        T14.4 — Personalised Indian Movie Recommender
-    </div>
-    """, unsafe_allow_html=True)
+    return
 
 
 # ── Hero Section ──────────────────────────────────────────────────────────────
@@ -361,7 +353,7 @@ def render_hero_section(df=None) -> None:
     # Show 4 popular movies as teasers
     if df is not None and len(df) > 0:
         st.markdown(
-            "<p style='text-align:center;color:#444;font-size:0.85em;margin-bottom:10px'>🔥 Popular right now</p>",
+            "<p style='text-align:center;color:#444;font-size:0.85em;margin-bottom:10px'> Popular right now</p>",
             unsafe_allow_html=True,
         )
         try:
@@ -388,7 +380,7 @@ def render_hero_section(df=None) -> None:
 
     st.markdown("<br/>", unsafe_allow_html=True)
     example = random.choice(EXAMPLE_QUERIES)
-    st.info(f'💡 **Try describing:** *"{example}"*')
+    st.info(f'**Try describing:** *"{example}"*')
 
 
 # ── Query Panel ───────────────────────────────────────────────────────────────
@@ -402,19 +394,19 @@ def render_query_panel(movie_titles: list) -> tuple:
     if "selected_chips" not in st.session_state:
         st.session_state.selected_chips = set()
 
-    st.markdown('<div class="cm-label">🎯 Tell us what you want to watch</div>', unsafe_allow_html=True)
+    st.markdown('<div class="cm-label">Tell us what you want to watch</div>', unsafe_allow_html=True)
     st.markdown(
         '<p style="margin:0 0 10px;color:#cfcfcf;font-size:0.94em">'
-        '🎬 <strong>By Movie Name</strong> (Optional) &nbsp;•&nbsp; '
-        '✍️ <strong>Describe the Vibe</strong> (Optional) &nbsp;•&nbsp; '
-        '🏷️ <strong>Mood & Genre</strong> (Optional)'
+        '<strong>By Movie Name</strong> (Optional) &nbsp;•&nbsp; '
+        '<strong>Describe the Vibe</strong> (Optional) &nbsp;•&nbsp; '
+        '<strong>Mood & Genre</strong> (Optional)'
         '</p>',
         unsafe_allow_html=True,
     )
     st.caption("Use any one option or combine all three. Add at least one input before searching.")
 
     # ── 1) Movie Name (Optional) ────────────────────────────────
-    st.markdown("**1) 🎬 By Movie Name (Optional)**")
+    st.markdown("**1) By Movie Name (Optional)**")
     st.caption("Pick a movie you loved and we'll find similar ones.")
     options = [""] + sorted(movie_titles)
     selected_movie_val = st.selectbox(
@@ -425,10 +417,10 @@ def render_query_panel(movie_titles: list) -> tuple:
         label_visibility="collapsed",
     )
     if selected_movie_val:
-        st.success(f"✓ Searching for movies similar to **{selected_movie_val}**")
+        st.success(f"Searching for movies similar to **{selected_movie_val}**")
 
     # ── 2) Free Text (Optional) ─────────────────────────────────
-    st.markdown("**2) ✍️ Describe the Vibe (Optional)**")
+    st.markdown("**2) Describe the Vibe (Optional)**")
     example = random.choice(EXAMPLE_QUERIES)
     st.caption("Describe the mood, tone, setting, or story you're craving.")
     free_text_val = st.text_area(
@@ -448,7 +440,7 @@ def render_query_panel(movie_titles: list) -> tuple:
         )
 
     # ── 3) Mood & Genre (Optional) ──────────────────────────────
-    st.markdown("**3) 🏷️ Mood & Genre (Optional)**")
+    st.markdown("**3) Mood & Genre (Optional)**")
     st.caption("Click to toggle genres and moods (multi-select).")
 
     st.markdown("**Genres**")
@@ -457,7 +449,7 @@ def render_query_panel(movie_titles: list) -> tuple:
         with g_cols[i]:
             sel = chip in st.session_state.selected_chips
             if st.button(
-                f"✓ {chip}" if sel else chip,
+                chip,
                 key=f"g_{chip}",
                 type="primary" if sel else "secondary",
                 use_container_width=True,
@@ -474,7 +466,7 @@ def render_query_panel(movie_titles: list) -> tuple:
         with m_cols[i]:
             sel = chip in st.session_state.selected_chips
             if st.button(
-                f"✓ {chip}" if sel else chip,
+                chip,
                 key=f"m_{chip}",
                 type="primary" if sel else "secondary",
                 use_container_width=True,
@@ -487,7 +479,7 @@ def render_query_panel(movie_titles: list) -> tuple:
 
     if st.session_state.selected_chips:
         chips_html = " ".join(
-            f'<span class="chip chip-genre">✓ {c}</span>'
+            f'<span class="chip chip-genre">{c}</span>'
             for c in sorted(st.session_state.selected_chips)
         )
         st.markdown(
@@ -516,7 +508,7 @@ def render_query_panel(movie_titles: list) -> tuple:
     with col_btn:
         st.markdown("<div style='padding-top:22px'>", unsafe_allow_html=True)
         submitted = st.button(
-            "🎯  Find My Movies",
+            "Find My Movies",
             type="primary",
             use_container_width=True,
             disabled=not has_input,
@@ -526,7 +518,7 @@ def render_query_panel(movie_titles: list) -> tuple:
 
     with col_clear:
         st.markdown("<div style='padding-top:22px'>", unsafe_allow_html=True)
-        if st.button("🗑 Clear", use_container_width=True, key="clear_query"):
+        if st.button("Clear", use_container_width=True, key="clear_query"):
             st.session_state.selected_chips = set()
             st.session_state.pop("movie_selectbox", None)
             st.session_state.pop("free_text_input",  None)
@@ -558,7 +550,7 @@ def render_results_header(query_summary: str, n_results: int) -> str:
         snippet = query_summary[:90] + ("..." if len(query_summary) > 90 else "")
         st.markdown(
             f'<div style="padding:6px 0">'
-            f'<span style="color:#F5C518;font-weight:700;font-size:1.05em">📽 {n_results} results</span>'
+            f'<span style="color:#F5C518;font-weight:700;font-size:1.05em">{n_results} results</span>'
             f'<span style="color:#555;font-size:0.82em"> &nbsp;·&nbsp; <em>{snippet}</em></span>'
             f'</div>',
             unsafe_allow_html=True,
@@ -758,10 +750,11 @@ def render_movie_card(
 
 def render_sidebar_filters() -> dict:
     """Render all sidebar filter widgets. Returns a filter config dict."""
-    st.markdown('<div class="cm-label">🌐 Language</div>', unsafe_allow_html=True)
+    st.markdown('<div class="cm-label">Language</div>', unsafe_allow_html=True)
     lang_choice = st.radio(
         "Language",
-        options=["🎬 Both (Default)", "🟢 Bollywood (Hindi)", "🎭 South Indian", "⚙️ Custom"],
+        options=["Both", "Bollywood (Hindi)", "South Indian", "Custom"],
+        index=1,
         key="lang_radio",
         label_visibility="collapsed",
     )
@@ -784,7 +777,7 @@ def render_sidebar_filters() -> dict:
         language_codes = [lang_map[l] for l in selected] or ["hi", "ta", "te", "ml", "kn"]
 
     st.markdown("---")
-    st.markdown('<div class="cm-label">🎞️ Old Movies</div>', unsafe_allow_html=True)
+    st.markdown('<div class="cm-label">Old Movies</div>', unsafe_allow_html=True)
     include_old_movies = st.toggle(
         "Include old movies (1990s / classic)",
         value=False,
@@ -815,7 +808,7 @@ def render_sidebar_filters() -> dict:
     )
 
     st.markdown("---")
-    st.markdown('<div class="cm-label">🔀 Diversity</div>', unsafe_allow_html=True)
+    st.markdown('<div class="cm-label">Diversity</div>', unsafe_allow_html=True)
     diversify = st.toggle(
         "Diversify results (MMR)",
         value=False,
@@ -871,7 +864,7 @@ def render_favourites_sidebar(favourites: list) -> str | None:
     if count > 5:
         st.caption(f"… and {count - 5} more")
 
-    with st.expander(f"📋 View All ({count})"):
+    with st.expander(f"View All ({count})"):
         for fav in favourites:
             ra = fav.get("vote_average", 0)
             st.markdown(
@@ -882,7 +875,7 @@ def render_favourites_sidebar(favourites: list) -> str | None:
 
     csv_data = export_favourites_csv(favourites)
     st.download_button(
-        "📥 Export CSV",
+        "Export CSV",
         data=csv_data,
         file_name="cinmatch_favourites.csv",
         mime="text/csv",
@@ -890,7 +883,7 @@ def render_favourites_sidebar(favourites: list) -> str | None:
         key="export_fav_csv",
     )
 
-    if st.button("🗑 Clear All", use_container_width=True, key="clear_all_fav"):
+    if st.button("Clear All", use_container_width=True, key="clear_all_fav"):
         removed_id = "__CLEAR_ALL__"
 
     return removed_id
