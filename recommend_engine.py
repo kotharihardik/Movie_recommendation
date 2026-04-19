@@ -80,6 +80,7 @@ _knn            = None
 _movie_vecs     = None
 
 _fame_scores:   Optional[np.ndarray] = None   # aligned with _df index
+_vote_priority_scores: Optional[np.ndarray] = None   # aligned with _df index
 
 
 # ── Token helpers (identical to notebook) ────────────────────────────────────
@@ -172,56 +173,72 @@ def _make_description(row: pd.Series) -> str:
     return desc.strip()
 
 
-# ── Fame Score ────────────────────────────────────────────────────────────────
+# ── Vote-count priority (year-normalized) ───────────────────────────────────
 
 def _compute_fame_scores(df: pd.DataFrame) -> np.ndarray:
+        """
+        Star-power fame heuristic (does NOT use popularity column).
+
+        Logic:
+            • For each actor / director count how many movies they appear in across
+                the whole dataset → appearance frequency (log-normalised)
+            • A movie's raw fame = mean(top-3 cast freq) * 0.55 + director_freq * 0.45
+            • Final score is MinMaxScaler → [0, 1]
+        """
+        dir_counts = df['director'].value_counts().to_dict()
+
+        from collections import Counter
+        actor_counts: Counter = Counter()
+        for cast_list in df['cast']:
+                for actor in (cast_list or []):
+                        actor_counts[actor] += 1
+
+        raw_fame = np.zeros(len(df), dtype=float)
+
+        for i, (_, row) in enumerate(df.iterrows()):
+                dir_score = math.log1p(dir_counts.get(row.get('director', ''), 0))
+                cast_list = [a for a in (row.get('cast', []) or [])][:5]
+                cast_freqs = sorted(
+                        [math.log1p(actor_counts.get(a, 0)) for a in cast_list],
+                        reverse=True
+                )
+                cast_score = np.mean(cast_freqs[:3]) if cast_freqs else 0.0
+                raw_fame[i] = 0.55 * cast_score + 0.45 * dir_score
+
+        scaler = MinMaxScaler()
+        return scaler.fit_transform(raw_fame.reshape(-1, 1)).flatten()
+
+
+# ── Vote-count priority (year-normalized) ───────────────────────────────────
+
+def _compute_year_normalized_vote_priority(df: pd.DataFrame) -> np.ndarray:
     """
-    Star-power fame heuristic (does NOT use popularity/vote_count columns).
+    Build a vote-count priority score in [0, 1] with year-wise normalisation.
 
-    Logic (inspired by fame_score.txt concept + augmented):
-      • For each actor / director count how many movies they appear in across
-        the whole dataset  →  appearance_freq  (log-normalised)
-      • A movie's raw fame = mean(top-3 cast freq) * 0.6 + director_freq * 0.4
-      • Additionally weight by: has_many_keywords (richly described films
-        tend to be mainstream), and title is clean.
-      • Final score is MinMaxScaler → [0, 1].
-
-    The intuition: mainstream blockbusters feature actors/directors who appear
-    repeatedly in the dataset (high appearance_freq), while obscure or
-    low-quality films feature unknowns.
+    Why year-wise normalisation:
+      older films naturally accumulate more votes than recent releases.
+      To avoid unfairly penalising newer movies, we rank vote_count inside each
+      release year and blend it with a small global vote_count signal.
     """
-    # Count director appearances
-    dir_counts = df['director'].value_counts().to_dict()
+    vc = pd.to_numeric(df['vote_count'], errors='coerce').fillna(0).clip(lower=0)
 
-    # Count actor appearances (each row's cast list can have multiple actors)
-    from collections import Counter
-    actor_counts: Counter = Counter()
-    for cast_list in df['cast']:
-        for actor in (cast_list or []):
-            actor_counts[actor] += 1
+    # Year-wise percentile rank in [0,1]. Single-item years get 1.0.
+    year_rank = (
+        df.assign(_vc=vc)
+        .groupby('release_year')['_vc']
+        .rank(method='average', pct=True)
+        .fillna(0.0)
+        .to_numpy(dtype=float)
+    )
 
-    # Build raw fame per movie
-    raw_fame = np.zeros(len(df), dtype=float)
-
-    for i, (_, row) in enumerate(df.iterrows()):
-        # Director signal
-        dir_score = math.log1p(dir_counts.get(row.get('director', ''), 0))
-
-        # Top-3 cast signal (actors who appear most often in dataset)
-        cast_list = [a for a in (row.get('cast', []) or [])][:5]
-        cast_freqs = sorted(
-            [math.log1p(actor_counts.get(a, 0)) for a in cast_list],
-            reverse=True
-        )
-        cast_score = np.mean(cast_freqs[:3]) if cast_freqs else 0.0
-
-        # Combine
-        raw_fame[i] = 0.55 * cast_score + 0.45 * dir_score
-
-    # Normalise to [0, 1]
+    # Global vote_count signal (log scaled then min-max), prevents overfitting
+    # to tiny year buckets.
+    global_log_vc = np.log1p(vc.to_numpy(dtype=float))
     scaler = MinMaxScaler()
-    fame = scaler.fit_transform(raw_fame.reshape(-1, 1)).flatten()
-    return fame
+    global_norm = scaler.fit_transform(global_log_vc.reshape(-1, 1)).flatten()
+
+    # Blend: mostly year-wise fairness + some global confidence.
+    return 0.75 * year_rank + 0.25 * global_norm
 
 
 # ── Engine builder ────────────────────────────────────────────────────────────
@@ -236,6 +253,7 @@ def build_engine(df: pd.DataFrame) -> None:
     global _sbert, _sbert_vecs
     global _knn, _movie_vecs
     global _fame_scores
+    global _vote_priority_scores
 
     if _engine_ready:
         return
@@ -321,10 +339,15 @@ def build_engine(df: pd.DataFrame) -> None:
         _knn = None
         _movie_vecs = None
 
-    # ── Fame scores ───────────────────────────────────────────────────────────
-    print("  [4/4] Computing fame scores…")
+    # ── Fame + vote-count priority scores ────────────────────────────────────
+    print("  [4/4] Computing fame and vote-count priority scores…")
     _fame_scores = _compute_fame_scores(_df)
-    print(f"     Fame score range: [{_fame_scores.min():.3f}, {_fame_scores.max():.3f}]")
+    _vote_priority_scores = _compute_year_normalized_vote_priority(_df)
+    print(
+        f"     Fame range: [{_fame_scores.min():.3f}, {_fame_scores.max():.3f}] | "
+        f"Vote-priority range: "
+        f"[{_vote_priority_scores.min():.3f}, {_vote_priority_scores.max():.3f}]"
+    )
 
     _engine_ready = True
     print(f"✅ Engine ready in {time.time()-t0:.1f}s")
@@ -461,7 +484,7 @@ def _hybrid_recommend(
     language_codes:  list,
     decade_filter:   list,
     top_n:           int,
-    min_fame:        float = 0.05,   # fame score gate: filter very obscure movies
+    min_vote_avg:    float = 5.0,    # do not recommend movies rated below this
     diversify:       bool = False,
 ) -> list[RecommendedMovie]:
     """
@@ -511,12 +534,16 @@ def _hybrid_recommend(
         genre_bonus = _genre_overlap_scores(df, effective_genres)
         total_sim  = 0.82 * total_sim + 0.18 * genre_bonus
 
-    # ── Fame score integration ────────────────────────────────────────────────
-    # Fame is NEVER used to dominate semantic similarity — it's a tie-breaker
-    # and a quality gate.  Weight: 8% additive boost after normalising sim.
+    # ── Final ranking integration ─────────────────────────────────────────────
+    # Keep fame boost, remove popularity-column dependency, and add year-wise
+    # vote-count priority.
     sim_norm  = total_sim / (total_sim.max() + 1e-9)
     fame_norm = _fame_scores if _fame_scores is not None else np.zeros(n)
-    final     = 0.70 * sim_norm + 0.30 * fame_norm
+    vote_priority = (
+        _vote_priority_scores
+        if _vote_priority_scores is not None else np.zeros(n)
+    )
+    final     = 0.65 * sim_norm + 0.20 * vote_priority + 0.15 * fame_norm
 
     # ── Exclude query movie itself ────────────────────────────────────────────
     if anchor_idx is not None:
@@ -533,13 +560,9 @@ def _hybrid_recommend(
     dec_mask = _decade_mask(df, decade_filter)
     final   *= dec_mask
 
-    # Fame gate: remove very obscure movies (bottom 5% fame), but only if we
-    # have enough candidates left
-    fame_gate = np.zeros(n, dtype=bool)
-    fame_gate[fame_norm >= min_fame] = True
-    gated_count = int(np.sum((final > 0) & fame_gate))
-    if gated_count >= top_n * 2:
-        final *= fame_gate
+    # Hard floor on vote_average: do not recommend movies rated below threshold.
+    vote_avg_gate = (pd.to_numeric(df['vote_average'], errors='coerce').fillna(0).values >= min_vote_avg)
+    final *= vote_avg_gate
 
     # Noisy title filter  
     clean_mask = np.array([_is_clean_title(t) for t in df['title']])
@@ -647,7 +670,7 @@ def get_recommendations(
     selected_chips: list,
     language_codes: list,
     top_n:          int  = 10,
-    min_rating:     float = 0.0,       # kept for UI compat; used as fame gate threshold
+    min_rating:     float = 5.0,       # kept for UI compat; treated as min vote_average
     decade_filter:  list = None,
     diversify:      bool = False,
     df:             Optional[pd.DataFrame] = None,  # passed from app if needed
@@ -688,8 +711,8 @@ def get_recommendations(
         "Horror","Family","Historical","Crime","Sci-Fi"
     }}
 
-    # Map fame gate: min_rating slider [0-9] → fame threshold [0, 0.4]
-    min_fame = float(min_rating) / 9.0 * 0.4
+    # Enforce minimum vote_average floor. If caller sends lower value, keep 5.0.
+    min_vote_avg = max(5.0, float(min_rating))
 
     # ── Run hybrid engine ─────────────────────────────────────────────────────
     results = _hybrid_recommend(
@@ -699,7 +722,7 @@ def get_recommendations(
         language_codes = language_codes,
         decade_filter  = decade_filter,
         top_n          = top_n,
-        min_fame       = min_fame,
+        min_vote_avg   = min_vote_avg,
         diversify      = diversify,
     )
 
@@ -721,8 +744,8 @@ def sort_results(results: list[RecommendedMovie], sort_by: str) -> list[Recommen
     if sort_by == "rating":
         return sorted(results, key=lambda m: m.vote_average, reverse=True)
     elif sort_by == "popularity":
-        # Use fame_score as the popularity signal (not unreliable DB column)
-        return sorted(results, key=lambda m: m.fame_score, reverse=True)
+        # Popularity sort now follows vote_count priority.
+        return sorted(results, key=lambda m: m.vote_count, reverse=True)
     elif sort_by == "newest":
         return sorted(results, key=lambda m: m.year, reverse=True)
     else:  # best_match
