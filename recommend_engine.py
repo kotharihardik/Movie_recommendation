@@ -83,6 +83,35 @@ _fame_scores:   Optional[np.ndarray] = None   # aligned with _df index
 _vote_priority_scores: Optional[np.ndarray] = None   # aligned with _df index
 
 
+def _fmt_list(values, max_items: int = 8) -> str:
+    """Format list-like values for concise terminal debug output."""
+    if not isinstance(values, list) or not values:
+        return "-"
+    shown = values[:max_items]
+    extra = "" if len(values) <= max_items else f" ... (+{len(values) - max_items} more)"
+    return ", ".join(str(v) for v in shown) + extra
+
+
+def _debug_movie_meta(label: str, row: pd.Series) -> None:
+    """Print essential movie metadata for debugging recommendation decisions."""
+    print(f"\\n[DEBUG] {label}")
+    print(f"  title       : {row.get('title', '')}")
+    print(f"  year/lang   : {row.get('release_year', 0)} / {row.get('language', '')}")
+    print(f"  vote        : avg={float(row.get('vote_average', 0.0)):.2f}, count={int(row.get('vote_count', 0))}")
+    print(f"  genres      : {_fmt_list(row.get('genres', []), max_items=10)}")
+    print(f"  keywords    : {_fmt_list(row.get('keywords', []), max_items=12)}")
+    print(f"  cast        : {_fmt_list(row.get('cast', []), max_items=8)}")
+
+
+def _safe_float(v, default: float = 0.0) -> float:
+    """Convert values to float while mapping NaN/inf/None to default."""
+    try:
+        x = float(v)
+    except (TypeError, ValueError):
+        return default
+    return x if np.isfinite(x) else default
+
+
 # ── Token helpers (identical to notebook) ────────────────────────────────────
 
 def _clean_token(s: str) -> str:
@@ -551,6 +580,9 @@ def _semantic_recommend_from_anchor(
     q_cast = set((q_row.get('cast') or [])[:5]) if isinstance(q_row.get('cast'), list) else set()
     q_year = int(q_row.get('release_year', 2000))
 
+    print("\n[DEBUG][SEMANTIC] =============================================")
+    _debug_movie_meta("Input movie", q_row)
+
     candidate_df = df.copy()
     candidate_df['sbert_raw'] = sbert_sim
     franchise_scores = _franchise_boost_scores(df, str(q_row.get('title', '')))
@@ -569,10 +601,11 @@ def _semantic_recommend_from_anchor(
     )
 
     # First hard filter for movie-title mode: require strong genre alignment.
+    # If query has 2+ genres, require at least 2 overlap; otherwise require 1.
+    required_genre_overlap = min(min_genre_overlap, len(q_genres)) if q_genres else 0
     if q_genres:
         candidate_df = candidate_df[
-            (candidate_df['genre_overlap'] >= min_genre_overlap) |
-            (candidate_df['franchise_boost'] >= 0.75)
+            (candidate_df['genre_overlap'] >= required_genre_overlap)
         ]
 
     if 'keywords' in candidate_df.columns:
@@ -596,6 +629,8 @@ def _semantic_recommend_from_anchor(
         np.log1p(vc) / np.log1p(vc_max + 1e-9)
         if vc_max > 0 else 0.0
     )
+    vote_priority_all = _vote_priority_scores if _vote_priority_scores is not None else np.zeros(len(df))
+    candidate_df['vote_priority_year'] = pd.Series(vote_priority_all, index=df.index).reindex(candidate_df.index).fillna(0.0)
     candidate_df['rating_norm'] = (
         pd.to_numeric(candidate_df['weighted_rating'], errors='coerce')
         .fillna(0)
@@ -603,14 +638,15 @@ def _semantic_recommend_from_anchor(
     )
 
     candidate_df['semantic_score'] = (
-        0.50 * candidate_df['sbert_raw'] +
-        0.18 * candidate_df['genre_jaccard'] +
-        0.10 * candidate_df['cast_jaccard'] +
-        0.04 * candidate_df['keyword_jaccard'] +
+        0.36 * candidate_df['sbert_raw'] +
+        0.16 * candidate_df['genre_jaccard'] +
+        0.06 * candidate_df['cast_jaccard'] +
+        0.03 * candidate_df['keyword_jaccard'] +
         0.05 * candidate_df['temporal_soft'] +
-        0.05 * candidate_df['vote_confidence'] +
-        0.04 * candidate_df['rating_norm'] +
-        0.04 * candidate_df['franchise_boost']
+        0.14 * candidate_df['vote_confidence'] +
+        0.14 * candidate_df['vote_priority_year'] +
+        0.01 * candidate_df['rating_norm'] +
+        0.05 * candidate_df['franchise_boost']
     )
 
     if anchor_idx in candidate_df.index:
@@ -625,6 +661,11 @@ def _semantic_recommend_from_anchor(
     candidate_df = candidate_df[
         (pd.to_numeric(candidate_df['vote_average'], errors='coerce').fillna(0) >= min_vote_avg) |
         (candidate_df['franchise_boost'] >= 0.75)
+    ]
+
+    # Never recommend movies with zero votes.
+    candidate_df = candidate_df[
+        pd.to_numeric(candidate_df['vote_count'], errors='coerce').fillna(0) > 0
     ]
 
     # Hard vote-count floor for movie-title mode.
@@ -652,20 +693,41 @@ def _semantic_recommend_from_anchor(
         # Align SBERT scores to the filtered frame index to avoid shape mismatch.
         relaxed_df['sbert_raw'] = pd.Series(sbert_sim, index=df.index).reindex(relaxed_df.index).fillna(0.0)
         relaxed_df['franchise_boost'] = pd.Series(franchise_scores, index=df.index).reindex(relaxed_df.index).fillna(0.0)
+        relaxed_df['genre_jaccard'] = relaxed_df['genres'].apply(
+            lambda g: _jaccard(q_genres, set(g)) if isinstance(g, list) else 0.0
+        )
+        relaxed_df['cast_jaccard'] = relaxed_df['cast'].apply(
+            lambda c: _jaccard(q_cast, set(c[:5])) if isinstance(c, list) else 0.0
+        )
+        relaxed_df['keyword_jaccard'] = relaxed_df['keywords'].apply(
+            lambda k: _jaccard(q_keywords, set(k)) if isinstance(k, list) else 0.0
+        ) if 'keywords' in relaxed_df.columns else 0.0
+        relaxed_year_diff = np.abs(
+            pd.to_numeric(relaxed_df['release_year'], errors='coerce').fillna(0) - q_year
+        )
+        relaxed_df['temporal_soft'] = np.exp(-(relaxed_year_diff ** 2) / (2.0 * (float(max(year_window, 1)) ** 2)))
+        relaxed_vc = pd.to_numeric(relaxed_df['vote_count'], errors='coerce').fillna(0).clip(lower=0)
+        relaxed_vc_max = float(relaxed_vc.max())
+        relaxed_df['vote_confidence'] = (
+            np.log1p(relaxed_vc) / np.log1p(relaxed_vc_max + 1e-9)
+            if relaxed_vc_max > 0 else 0.0
+        )
+        relaxed_df['vote_priority_year'] = pd.Series(vote_priority_all, index=df.index).reindex(relaxed_df.index).fillna(0.0)
+        relaxed_df['rating_norm'] = (
+            pd.to_numeric(relaxed_df['weighted_rating'], errors='coerce')
+            .fillna(0)
+            .clip(lower=0, upper=10) / 10.0
+        )
         relaxed_df['semantic_score'] = (
-            0.78 * relaxed_df['sbert_raw'] +
-            0.12 * relaxed_df['genres'].apply(
-                lambda g: _jaccard(q_genres, set(g)) if isinstance(g, list) else 0.0
-            ) +
-            0.05 * relaxed_df['cast'].apply(
-                lambda c: _jaccard(q_cast, set(c[:5])) if isinstance(c, list) else 0.0
-            ) +
-            0.03 * relaxed_df['franchise_boost'] +
-            0.05 * (
-                pd.to_numeric(relaxed_df['weighted_rating'], errors='coerce')
-                .fillna(0)
-                .clip(lower=0, upper=10) / 10.0
-            )
+            0.36 * relaxed_df['sbert_raw'] +
+            0.16 * relaxed_df['genre_jaccard'] +
+            0.06 * relaxed_df['cast_jaccard'] +
+            0.03 * relaxed_df['keyword_jaccard'] +
+            0.05 * relaxed_df['temporal_soft'] +
+            0.14 * relaxed_df['vote_confidence'] +
+            0.14 * relaxed_df['vote_priority_year'] +
+            0.01 * relaxed_df['rating_norm'] +
+            0.05 * relaxed_df['franchise_boost']
         )
         if anchor_idx in relaxed_df.index:
             relaxed_df.loc[anchor_idx, 'semantic_score'] = 0.0
@@ -679,8 +741,11 @@ def _semantic_recommend_from_anchor(
             relaxed_df = relaxed_df[
                 relaxed_df['genres'].apply(
                     lambda g: len(q_genres & set(g)) if isinstance(g, list) else 0
-                ) >= 1
+                ) >= required_genre_overlap
             ]
+        relaxed_df = relaxed_df[
+            pd.to_numeric(relaxed_df['vote_count'], errors='coerce').fillna(0) > 0
+        ]
         relaxed_df = relaxed_df[
             (pd.to_numeric(relaxed_df['vote_count'], errors='coerce').fillna(0) > min_vote_count) |
             (relaxed_df['franchise_boost'] >= 0.75)
@@ -699,12 +764,91 @@ def _semantic_recommend_from_anchor(
     candidate_df['franchise_boost'] = pd.to_numeric(
         candidate_df.get('franchise_boost', 0.0), errors='coerce'
     ).fillna(0.0)
+    for col in [
+        'sbert_raw',
+        'genre_jaccard',
+        'cast_jaccard',
+        'keyword_jaccard',
+        'temporal_soft',
+        'vote_confidence',
+        'vote_priority_year',
+        'rating_norm',
+    ]:
+        candidate_df[col] = pd.to_numeric(candidate_df.get(col, 0.0), errors='coerce').fillna(0.0)
 
-    # Franchise-first ordering: show same-name series first, then fill others.
-    strong_first = candidate_df[candidate_df['franchise_boost'] >= 0.75].nlargest(top_n, 'semantic_score')
-    others = candidate_df[candidate_df['franchise_boost'] < 0.75].nlargest(top_n, 'semantic_score')
-    top = pd.concat([strong_first, others], axis=0).head(top_n)
+    # Final ranking: reserve slots for strong franchise matches first, then fill.
+    # This keeps sequel/series continuity without hardcoding any specific movie.
+    franchise_quota = min(3, top_n)
+    franchise_df = candidate_df[candidate_df['franchise_boost'] >= 0.90].sort_values(
+        by=['semantic_score', 'vote_priority_year', 'vote_count'],
+        ascending=[False, False, False],
+    ).head(franchise_quota)
+    remaining_df = candidate_df.drop(index=franchise_df.index, errors='ignore').sort_values(
+        by=['semantic_score', 'vote_priority_year', 'vote_count'],
+        ascending=[False, False, False],
+    )
+    top = pd.concat([franchise_df, remaining_df], axis=0).head(top_n)
     fame_norm = _fame_scores if _fame_scores is not None else np.zeros(len(df))
+
+    for rank, (idx, row) in enumerate(top.iterrows(), start=1):
+        cand_genres = set(row.get('genres', []) if isinstance(row.get('genres', []), list) else [])
+        cand_keywords = set(row.get('keywords', []) if isinstance(row.get('keywords', []), list) else [])
+        cand_cast = set((row.get('cast', []) or [])[:5]) if isinstance(row.get('cast', []), list) else set()
+
+        shared_genres = sorted(list(q_genres & cand_genres))
+        shared_keywords = sorted(list(q_keywords & cand_keywords))
+        shared_cast = sorted(list(q_cast & cand_cast))
+
+        sbert_raw = _safe_float(row.get('sbert_raw', 0.0))
+        genre_j = _safe_float(row.get('genre_jaccard', 0.0))
+        cast_j = _safe_float(row.get('cast_jaccard', 0.0))
+        keyword_j = _safe_float(row.get('keyword_jaccard', 0.0))
+        temporal = _safe_float(row.get('temporal_soft', 0.0))
+        vote_conf = _safe_float(row.get('vote_confidence', 0.0))
+        vote_priority_year = _safe_float(row.get('vote_priority_year', 0.0))
+        rating_norm = _safe_float(row.get('rating_norm', 0.0))
+        franchise = _safe_float(row.get('franchise_boost', 0.0))
+        semantic = _safe_float(row.get('semantic_score', 0.0))
+
+        comp = {
+            'sbert(0.36)': 0.36 * sbert_raw,
+            'genre_jaccard(0.16)': 0.16 * genre_j,
+            'cast_jaccard(0.06)': 0.06 * cast_j,
+            'keyword_jaccard(0.03)': 0.03 * keyword_j,
+            'temporal_soft(0.05)': 0.05 * temporal,
+            'vote_confidence(0.14)': 0.14 * vote_conf,
+            'vote_priority_year(0.14)': 0.14 * vote_priority_year,
+            'rating_norm(0.01)': 0.01 * rating_norm,
+            'franchise_boost(0.05)': 0.05 * franchise,
+        }
+        top_reasons = sorted(comp.items(), key=lambda kv: kv[1], reverse=True)[:3]
+
+        print(f"\n[DEBUG][SEMANTIC][RANK {rank}] {row.get('title', '')}")
+        print(
+            f"  final_semantic_score={semantic:.4f} | "
+            f"vote_count={int(row.get('vote_count', 0))} | "
+            f"vote_avg={float(row.get('vote_average', 0.0)):.2f}"
+        )
+        print(
+            f"  components raw: sbert={sbert_raw:.4f}, genre_jaccard={genre_j:.4f}, "
+            f"cast_jaccard={cast_j:.4f}, keyword_jaccard={keyword_j:.4f}, "
+            f"temporal_soft={temporal:.4f}, vote_conf={vote_conf:.4f}, vote_priority_year={vote_priority_year:.4f}, "
+            f"rating_norm={rating_norm:.4f}, franchise_boost={franchise:.4f}"
+        )
+        print(
+            f"  weighted contribution: "
+            + ", ".join(f"{k}={v:.4f}" for k, v in comp.items())
+        )
+        print(
+            "  why recommended: "
+            + ", ".join(f"{k}={v:.4f}" for k, v in top_reasons)
+        )
+        print(f"  genre         : {_fmt_list(row.get('genres', []), max_items=10)}")
+        print(f"  keyword       : {_fmt_list(row.get('keywords', []), max_items=12)}")
+        print(f"  cast          : {_fmt_list(row.get('cast', []), max_items=8)}")
+        print(f"  shared_genres : {_fmt_list(shared_genres, max_items=10)}")
+        print(f"  shared_keywords: {_fmt_list(shared_keywords, max_items=12)}")
+        print(f"  shared_cast   : {_fmt_list(shared_cast, max_items=8)}")
 
     results: list[RecommendedMovie] = []
     for idx, row in top.iterrows():
@@ -756,6 +900,7 @@ def _hybrid_recommend(
     """
     df = _df
     n  = len(df)
+    genre_bonus = np.zeros(n, dtype=float)
 
     # ── Base similarity scores ────────────────────────────────────────────────
     if anchor_idx is not None:
@@ -781,7 +926,12 @@ def _hybrid_recommend(
         # Anchor movie's genre set for structural overlap guardrail
         q_row      = df.loc[anchor_idx]
         q_genres_a = set(q_row['genres']) if isinstance(q_row.get('genres'), list) else set()
+        q_keywords_a = set(q_row['keywords']) if isinstance(q_row.get('keywords'), list) else set()
+        q_cast_a = set((q_row.get('cast') or [])[:5]) if isinstance(q_row.get('cast'), list) else set()
         q_year     = int(q_row.get('release_year', 2000))
+
+        print("\n[DEBUG][HYBRID] ===============================================")
+        _debug_movie_meta("Input movie", q_row)
 
     else:
         # No anchor movie → pure text/chip query
@@ -791,7 +941,14 @@ def _hybrid_recommend(
         s_tfidf     = np.zeros(n)
         total_sim   = s_sbert
         q_genres_a  = set()
+        q_keywords_a = set()
+        q_cast_a = set()
         q_year      = None
+
+        print("\n[DEBUG][HYBRID] ===============================================")
+        print("[DEBUG] Input query (no anchor movie)")
+        print(f"  query_text   : {query_text if query_text else '-'}")
+        print(f"  query_genres : {_fmt_list(sorted(list(query_genres)), max_items=10)}")
 
     # ── Genre overlap bonus (structural guardrail, from notebook) ─────────────
     effective_genres = query_genres | q_genres_a
@@ -832,6 +989,7 @@ def _hybrid_recommend(
     # ── Hard filters ─────────────────────────────────────────────────────────
 
     # Language filter
+    lang_mask = np.ones(n, dtype=bool)
     if language_codes:
         lang_mask = df['language'].isin(language_codes).values
         final *= lang_mask
@@ -852,7 +1010,12 @@ def _hybrid_recommend(
     vote_avg_gate = (pd.to_numeric(df['vote_average'], errors='coerce').fillna(0).values >= min_vote_avg)
     final *= vote_avg_gate
 
+    # Never recommend movies with zero votes.
+    nonzero_vote_gate = (pd.to_numeric(df['vote_count'], errors='coerce').fillna(0).values > 0)
+    final *= nonzero_vote_gate
+
     # For movie-title anchored requests, keep only confident vote_count rows.
+    vote_count_gate = np.ones(n, dtype=bool)
     if anchor_idx is not None:
         vote_count_gate = (
             (pd.to_numeric(df['vote_count'], errors='coerce').fillna(0).values > 20) |
@@ -914,6 +1077,72 @@ def _hybrid_recommend(
         row   = df.iloc[idx]
         score = float(final[idx])
         fm    = float(fame_norm[idx])
+
+        cand_genres = set(row.get('genres', []) if isinstance(row.get('genres', []), list) else [])
+        cand_keywords = set(row.get('keywords', []) if isinstance(row.get('keywords', []), list) else [])
+        cand_cast = set((row.get('cast', []) or [])[:5]) if isinstance(row.get('cast', []), list) else set()
+        shared_genres = sorted(list(effective_genres & cand_genres)) if effective_genres else []
+        shared_keywords = sorted(list(q_keywords_a & cand_keywords)) if q_keywords_a else []
+        shared_cast = sorted(list(q_cast_a & cand_cast)) if q_cast_a else []
+
+        tfidf_val = float(s_tfidf[idx]) if idx < len(s_tfidf) else 0.0
+        sbert_val = float(s_sbert[idx]) if idx < len(s_sbert) else 0.0
+        cf_val = float(s_cf[idx]) if idx < len(s_cf) else 0.0
+        genre_bonus_val = float(genre_bonus[idx]) if idx < len(genre_bonus) else 0.0
+        total_sim_val = float(total_sim[idx]) if idx < len(total_sim) else 0.0
+        sim_norm_val = float(sim_norm[idx]) if idx < len(sim_norm) else 0.0
+        vote_priority_val = float(vote_priority[idx]) if idx < len(vote_priority) else 0.0
+        rating_norm_val = float(rating_norm[idx]) if idx < len(rating_norm) else 0.0
+        franchise_val = float(franchise_boost[idx]) if idx < len(franchise_boost) else 0.0
+
+        if genre_only_mode:
+            contrib = {
+                'vote_priority(0.55)': 0.55 * vote_priority_val,
+                'rating_norm(0.35)': 0.35 * rating_norm_val,
+                'fame(0.10)': 0.10 * fm,
+            }
+        else:
+            contrib = {
+                'sim_norm(0.65)': 0.65 * sim_norm_val,
+                'vote_priority(0.20)': 0.20 * vote_priority_val,
+                'fame(0.15)': 0.15 * fm,
+            }
+
+        top_reasons = sorted(contrib.items(), key=lambda kv: kv[1], reverse=True)[:3]
+
+        print(f"\n[DEBUG][HYBRID][IDX {idx}] {row.get('title', '')}")
+        print(
+            f"  final_score={score:.4f} | vote_avg={float(row.get('vote_average', 0.0)):.2f} | "
+            f"vote_count={int(row.get('vote_count', 0))}"
+        )
+        print(
+            f"  base signals: tfidf={tfidf_val:.4f}, sbert={sbert_val:.4f}, cf={cf_val:.4f}, "
+            f"genre_bonus={genre_bonus_val:.4f}, total_sim={total_sim_val:.4f}"
+        )
+        print(
+            f"  fused signals: sim_norm={sim_norm_val:.4f}, vote_priority={vote_priority_val:.4f}, "
+            f"fame={fm:.4f}, rating_norm={rating_norm_val:.4f}, franchise_boost={franchise_val:.4f}"
+        )
+        print(
+            "  weighted contribution: "
+            + ", ".join(f"{k}={v:.4f}" for k, v in contrib.items())
+        )
+        print(
+            "  why recommended: "
+            + ", ".join(f"{k}={v:.4f}" for k, v in top_reasons)
+        )
+        print(
+            "  gates: "
+            f"lang={bool(lang_mask[idx])}, decade={bool(dec_mask[idx])}, "
+            f"vote_avg={bool(vote_avg_gate[idx])}, nonzero_votes={bool(nonzero_vote_gate[idx])}, vote_count={bool(vote_count_gate[idx])}, "
+            f"clean_title={bool(clean_mask[idx])}"
+        )
+        print(f"  genre         : {_fmt_list(row.get('genres', []), max_items=10)}")
+        print(f"  keyword       : {_fmt_list(row.get('keywords', []), max_items=12)}")
+        print(f"  cast          : {_fmt_list(row.get('cast', []), max_items=8)}")
+        print(f"  shared_genres : {_fmt_list(shared_genres, max_items=10)}")
+        print(f"  shared_keywords: {_fmt_list(shared_keywords, max_items=12)}")
+        print(f"  shared_cast   : {_fmt_list(shared_cast, max_items=8)}")
 
         results.append(RecommendedMovie(
             movie_id       = str(row.get('id', idx)),
@@ -1043,7 +1272,7 @@ def get_recommendations(
             top_n           = top_n,
             min_vote_avg    = min_vote_avg,
             year_window     = 12,
-            min_genre_overlap = 3,
+            min_genre_overlap = 2,
             min_vote_count  = 20,
         )
 
