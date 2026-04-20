@@ -7,6 +7,7 @@ teal for Hindi / crimson for South Indian language badges.
 """
 
 import random
+import re
 from typing import Optional
 
 import streamlit as st
@@ -350,18 +351,49 @@ def render_hero_section(df=None) -> None:
     </div>
     """, unsafe_allow_html=True)
 
-    # Show 4 popular movies as teasers
+    # Show 4 random non-adult teaser posters with Action-first priority.
     if df is not None and len(df) > 0:
         st.markdown(
-            "<p style='text-align:center;color:#444;font-size:0.85em;margin-bottom:10px'> Popular right now</p>",
+            "<p style='text-align:center;color:#444;font-size:0.85em;margin-bottom:10px'> Action picks right now</p>",
             unsafe_allow_html=True,
         )
         try:
-            sample = (
-                df[df["poster_path"].str.len() > 5]
-                .nlargest(300, "popularity")
-                .sample(min(4, len(df)))
-            )
+            pool = df.copy()
+
+            # Keep only rows with valid posters.
+            if "poster_path" in pool.columns:
+                poster_mask = pool["poster_path"].fillna("").astype(str).str.len() > 5
+                pool = pool[poster_mask]
+
+            # Drop adult titles when the metadata column exists.
+            if "adult" in pool.columns:
+                adult_true = {
+                    "1", "true", "t", "yes", "y"
+                }
+                adult_mask = (
+                    pool["adult"]
+                    .fillna(False)
+                    .astype(str)
+                    .str.strip()
+                    .str.lower()
+                    .isin(adult_true)
+                )
+                pool = pool[~adult_mask]
+
+            def _has_action(genres_val) -> bool:
+                if isinstance(genres_val, list):
+                    return any(str(g).strip().lower() == "action" for g in genres_val)
+                return bool(re.search(r"\\baction\\b", str(genres_val or "").lower()))
+
+            if "genres" in pool.columns:
+                action_pool = pool[pool["genres"].apply(_has_action)]
+            else:
+                action_pool = pool.iloc[0:0]
+
+            source_pool = action_pool if len(action_pool) > 0 else pool
+            sample_base = source_pool.nlargest(min(300, len(source_pool)), "popularity")
+            sample = sample_base.sample(min(4, len(sample_base))) if len(sample_base) > 0 else sample_base
+
             cols = st.columns(4)
             for i, (_, row) in enumerate(sample.iterrows()):
                 with cols[i]:

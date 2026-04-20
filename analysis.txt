@@ -1,0 +1,925 @@
+----only vibe descrive(provdie exact copy paste ghanjani movie overview with in movie list) and genere () and not include moive title --------
+
+[DEBUG][REQUEST] ==============================================================
+[DEBUG][REQUEST] Incoming recommendation request
+[DEBUG][REQUEST] movie_title      : -
+[DEBUG][REQUEST] free_text        : A man suffering from anterograde amnesia as a result of a violent attack in the past sets out to avenge his girlfriend's death with the aid of photographs, notes and tattoos all ov...
+[DEBUG][REQUEST] selected_chips   : Romance
+[DEBUG][REQUEST] query_text       : A Romance film. A man suffering from anterograde amnesia as a result of a violent attack in the past sets out to avenge his girlfriend's death with the aid of photographs, notes an...
+[DEBUG][REQUEST] query_genres     : Romance
+[DEBUG][REQUEST] language_codes   : hi
+[DEBUG][REQUEST] decade_filter    : 2020s, 2010s
+[DEBUG][REQUEST] top_n/min_rating : 20 / 5.0
+[DEBUG][REQUEST] resolved_anchor  : none (text/chip mode)
+[DEBUG][REQUEST] route            : hybrid
+
+[DEBUG][HYBRID] ==============================================================
+[DEBUG][HYBRID] Hybrid recommendation pipeline
+[DEBUG] Input query (no anchor movie)
+  query_text   : A Romance film. A man suffering from anterograde amnesia as a result of a violent attack in the past sets out to avenge his girlfriend's death with the aid of photographs, notes and tattoos all over his body
+  query_genres : Romance
+[DEBUG][HYBRID] applied genre overlap blend: 0.82*base + 0.18*genre_bonus with effective_genres=['Romance']
+[DEBUG][HYBRID] final mix: sim_norm*0.65 + vote_priority*0.20 + fame*0.15
+[DEBUG][HYBRID][FILTER] start positive candidates: 23331
+[DEBUG][HYBRID][FILTER] language filter              23331 ->  9257 (removed=14074, kept= 39.7%) | languages=['hi']
+[DEBUG][HYBRID][FILTER] decade filter                 9257 ->  3943 (removed=5314, kept= 42.6%) | decades=['2020s', '2010s']
+[DEBUG][HYBRID][FILTER] vote_average gate             3943 ->  1724 (removed=2219, kept= 43.7%) | vote_avg>=5.0
+[DEBUG][HYBRID][FILTER] non-zero votes                1724 ->  1723 (removed=   1, kept= 99.9%)
+[DEBUG][HYBRID][FILTER] clean title                   1723 ->  1718 (removed=   5, kept= 99.7%)
+[DEBUG][HYBRID] ranked pool size=40 (fetch_n=40, diversify=False)
+[DEBUG][HYBRID] top-20 selected directly by final score
+
+[DEBUG][HYBRID][RANK 01] The Promise (idx=4710)
+  final_score=0.7968 | vote_avg=6.80 | vote_count=2
+  base signals: tfidf=0.0000, sbert=0.6000, cf=0.0000, genre_bonus=1.0000, total_sim=0.6720
+  fused signals: sim_norm=0.9540, vote_priority=0.5978, fame=0.3807, rating_norm=0.6800, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.9540  x  w=0.65  =>  0.6201
+   2. vote_priority          raw=0.5978  x  w=0.20  =>  0.1196
+   3. fame                   raw=0.3807  x  w=0.15  =>  0.0571
+  why recommended: sim_norm=0.6201, vote_priority=0.1196, fame=0.0571
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance
+  keyword       : -
+  cast          : Jim Sarbh, Priyamani, Roshan joy koottiyani, Chirag Nayak, Ananya Ghosh
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 02] Kedarnath (idx=1705)
+  final_score=0.7834 | vote_avg=6.51 | vote_count=48
+  base signals: tfidf=0.0000, sbert=0.5362, cf=0.0000, genre_bonus=1.0000, total_sim=0.6197
+  fused signals: sim_norm=0.8798, vote_priority=0.8136, fame=0.3257, rating_norm=0.6510, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.8798  x  w=0.65  =>  0.5719
+   2. vote_priority          raw=0.8136  x  w=0.20  =>  0.1627
+   3. fame                   raw=0.3257  x  w=0.15  =>  0.0488
+  why recommended: sim_norm=0.5719, vote_priority=0.1627, fame=0.0488
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance
+  keyword       : natural disaster, pilgrimage
+  cast          : Sushant Singh Rajput, Sara Ali Khan, Nitish Bharadwaj, Alka Amin, Sonali Sachdev
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 03] Karthik Calling Karthik (idx=890)
+  final_score=0.7684 | vote_avg=6.34 | vote_count=102
+  base signals: tfidf=0.0000, sbert=0.6211, cf=0.0000, genre_bonus=0.5000, total_sim=0.5993
+  fused signals: sim_norm=0.8508, vote_priority=0.8706, fame=0.2749, rating_norm=0.6338, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.8508  x  w=0.65  =>  0.5530
+   2. vote_priority          raw=0.8706  x  w=0.20  =>  0.1741
+   3. fame                   raw=0.2749  x  w=0.15  =>  0.0412
+  why recommended: sim_norm=0.5530, vote_priority=0.1741, fame=0.0412
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance, Thriller
+  keyword       : schizophrenia, childhood trauma, alter ego, mental control, haunted by the past
+  cast          : Farhan Akhtar, Deepika Padukone, Ram Kapoor, Shefali Shah, Vivan Bhatena
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 04] The Zoya Factor (idx=16805)
+  final_score=0.7554 | vote_avg=5.50 | vote_count=28
+  base signals: tfidf=0.0000, sbert=0.4922, cf=0.0000, genre_bonus=1.0000, total_sim=0.5836
+  fused signals: sim_norm=0.8286, vote_priority=0.7816, fame=0.4031, rating_norm=0.5500, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.8286  x  w=0.65  =>  0.5386
+   2. vote_priority          raw=0.7816  x  w=0.20  =>  0.1563
+   3. fame                   raw=0.4031  x  w=0.15  =>  0.0605
+  why recommended: sim_norm=0.5386, vote_priority=0.1563, fame=0.0605
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance
+  keyword       : superstition, lucky charm
+  cast          : Dulquer Salmaan, Sonam Kapoor Ahuja, Sanjay Kapoor, Angad Bedi, Sikandar Kher
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 05] Housefull (idx=197)
+  final_score=0.7449 | vote_avg=5.72 | vote_count=141
+  base signals: tfidf=0.0000, sbert=0.5484, cf=0.0000, genre_bonus=0.5000, total_sim=0.5397
+  fused signals: sim_norm=0.7662, vote_priority=0.8867, fame=0.4638, rating_norm=0.5723, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7662  x  w=0.65  =>  0.4980
+   2. vote_priority          raw=0.8867  x  w=0.20  =>  0.1773
+   3. fame                   raw=0.4638  x  w=0.15  =>  0.0696
+  why recommended: sim_norm=0.4980, vote_priority=0.1773, fame=0.0696
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Comedy, Romance
+  keyword       : love, game
+  cast          : Akshay Kumar, Arjun Rampal, Riteish Deshmukh, Deepika Padukone, Lara Dutta
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 06] Housefull 2 (idx=596)
+  final_score=0.7443 | vote_avg=5.55 | vote_count=127
+  base signals: tfidf=0.0000, sbert=0.5477, cf=0.0000, genre_bonus=0.5000, total_sim=0.5391
+  fused signals: sim_norm=0.7653, vote_priority=0.8651, fame=0.4920, rating_norm=0.5551, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7653  x  w=0.65  =>  0.4975
+   2. vote_priority          raw=0.8651  x  w=0.20  =>  0.1730
+   3. fame                   raw=0.4920  x  w=0.15  =>  0.0738
+  why recommended: sim_norm=0.4975, vote_priority=0.1730, fame=0.0738
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Comedy, Romance
+  keyword       : -
+  cast          : Akshay Kumar, John Abraham, Riteish Deshmukh, Asin Thottumkal, Rishi Kapoor
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 07] Tere Ishk Mein (idx=138)
+  final_score=0.7409 | vote_avg=5.50 | vote_count=14
+  base signals: tfidf=0.0000, sbert=0.5645, cf=0.0000, genre_bonus=0.5000, total_sim=0.5529
+  fused signals: sim_norm=0.7849, vote_priority=0.7720, fame=0.5091, rating_norm=0.5500, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7849  x  w=0.65  =>  0.5102
+   2. vote_priority          raw=0.7720  x  w=0.20  =>  0.1544
+   3. fame                   raw=0.5091  x  w=0.15  =>  0.0764
+  why recommended: sim_norm=0.5102, vote_priority=0.1544, fame=0.0764
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance, Drama
+  keyword       : -
+  cast          : Dhanush, Kriti Sanon, Prakash Raj, Tota Roy Chowdhury, Priyanshu Painyuli
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 08] Photograph (idx=16800)
+  final_score=0.7403 | vote_avg=6.67 | vote_count=80
+  base signals: tfidf=0.0000, sbert=0.5836, cf=0.0000, genre_bonus=0.5000, total_sim=0.5686
+  fused signals: sim_norm=0.8072, vote_priority=0.8605, fame=0.2900, rating_norm=0.6669, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.8072  x  w=0.65  =>  0.5247
+   2. vote_priority          raw=0.8605  x  w=0.20  =>  0.1721
+   3. fame                   raw=0.2900  x  w=0.15  =>  0.0435
+  why recommended: sim_norm=0.5247, vote_priority=0.1721, fame=0.0435
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Drama, Romance
+  keyword       : affectation, aggressive, zealous, calm, candid, absurd, dramatic, critical, whimsical, admiring, adoring, ambiguous ... (+6 more)
+  cast          : Nawazuddin Siddiqui, Sanya Malhotra, Farrukh Jaffar, Akash Sinha, Abdul Quadir Amin
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 09] Panga (idx=1459)
+  final_score=0.7399 | vote_avg=6.74 | vote_count=27
+  base signals: tfidf=0.0000, sbert=0.4707, cf=0.0000, genre_bonus=1.0000, total_sim=0.5659
+  fused signals: sim_norm=0.8035, vote_priority=0.7811, fame=0.4096, rating_norm=0.6741, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.8035  x  w=0.65  =>  0.5222
+   2. vote_priority          raw=0.7811  x  w=0.20  =>  0.1562
+   3. fame                   raw=0.4096  x  w=0.15  =>  0.0614
+  why recommended: sim_norm=0.5222, vote_priority=0.1562, fame=0.0614
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance
+  keyword       : dreams, sports, comeback, love, second chance, kabaddi, women empowerment, supportive husband
+  cast          : Kangana Ranaut, Jassie Gill, Richa Chadha, Neena Gupta, Yagya Bhasin
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 10] Ajeeb Daastaans (idx=304)
+  final_score=0.7374 | vote_avg=6.11 | vote_count=47
+  base signals: tfidf=0.0000, sbert=0.5640, cf=0.0000, genre_bonus=0.5000, total_sim=0.5525
+  fused signals: sim_norm=0.7844, vote_priority=0.8403, fame=0.3966, rating_norm=0.6106, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7844  x  w=0.65  =>  0.5098
+   2. vote_priority          raw=0.8403  x  w=0.20  =>  0.1681
+   3. fame                   raw=0.3966  x  w=0.15  =>  0.0595
+  why recommended: sim_norm=0.5098, vote_priority=0.1681, fame=0.0595
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Drama, Romance
+  keyword       : -
+  cast          : Konkona Sen Sharma, Shefali Shah, Aditi Rao Hydari, Abhishek Banerjee, Nushrratt Bharuccha
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 11] Ek Villain (idx=153)
+  final_score=0.7366 | vote_avg=6.52 | vote_count=170
+  base signals: tfidf=0.0000, sbert=0.5940, cf=0.0000, genre_bonus=0.2500, total_sim=0.5320
+  fused signals: sim_norm=0.7553, vote_priority=0.8907, fame=0.4500, rating_norm=0.6524, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7553  x  w=0.65  =>  0.4910
+   2. vote_priority          raw=0.8907  x  w=0.20  =>  0.1781
+   3. fame                   raw=0.4500  x  w=0.15  =>  0.0675
+  why recommended: sim_norm=0.4910, vote_priority=0.1781, fame=0.0675
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance, Action, Crime, Thriller
+  keyword       : revenge, serial killer
+  cast          : Sidharth Malhotra, Shraddha Kapoor, Riteish Deshmukh, Aamna Shariff, Asif Basra
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 12] Mausam (idx=934)
+  final_score=0.7344 | vote_avg=5.70 | vote_count=37
+  base signals: tfidf=0.0000, sbert=0.5808, cf=0.0000, genre_bonus=0.5000, total_sim=0.5663
+  fused signals: sim_norm=0.8039, vote_priority=0.7818, fame=0.3698, rating_norm=0.5700, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.8039  x  w=0.65  =>  0.5225
+   2. vote_priority          raw=0.7818  x  w=0.20  =>  0.1564
+   3. fame                   raw=0.3698  x  w=0.15  =>  0.0555
+  why recommended: sim_norm=0.5225, vote_priority=0.1564, fame=0.0555
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance, Drama
+  keyword       : 9/11
+  cast          : Shahid Kapoor, Sonam Kapoor Ahuja, Anupam Kher, Supriya Pathak, Aditi Sharma
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 13] Ae Dil Hai Mushkil (idx=249)
+  final_score=0.7339 | vote_avg=6.40 | vote_count=216
+  base signals: tfidf=0.0000, sbert=0.5392, cf=0.0000, genre_bonus=0.5000, total_sim=0.5321
+  fused signals: sim_norm=0.7554, vote_priority=0.9023, fame=0.4159, rating_norm=0.6400, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7554  x  w=0.65  =>  0.4910
+   2. vote_priority          raw=0.9023  x  w=0.20  =>  0.1805
+   3. fame                   raw=0.4159  x  w=0.15  =>  0.0624
+  why recommended: sim_norm=0.4910, vote_priority=0.1805, fame=0.0624
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance, Drama
+  keyword       : love, relationship, break-up, heartbreak, rebound
+  cast          : Ranbir Kapoor, Anushka Sharma, Aishwarya Rai Bachchan, Fawad Khan, Lisa Haydon
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 14] Lootera (idx=698)
+  final_score=0.7328 | vote_avg=6.90 | vote_count=90
+  base signals: tfidf=0.0000, sbert=0.5552, cf=0.0000, genre_bonus=0.5000, total_sim=0.5453
+  fused signals: sim_norm=0.7741, vote_priority=0.8531, fame=0.3932, rating_norm=0.6900, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7741  x  w=0.65  =>  0.5032
+   2. vote_priority          raw=0.8531  x  w=0.20  =>  0.1706
+   3. fame                   raw=0.3932  x  w=0.15  =>  0.0590
+  why recommended: sim_norm=0.5032, vote_priority=0.1706, fame=0.0590
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Drama, Romance
+  keyword       : artist, painter, love, based on short story
+  cast          : Ranveer Singh, Sonakshi Sinha, Adil Hussain, Vikrant Massey, Arif Zakaria
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 15] Manmarziyaan (idx=365)
+  final_score=0.7313 | vote_avg=6.70 | vote_count=69
+  base signals: tfidf=0.0000, sbert=0.5319, cf=0.0000, genre_bonus=0.5000, total_sim=0.5262
+  fused signals: sim_norm=0.7470, vote_priority=0.8360, fame=0.5236, rating_norm=0.6700, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7470  x  w=0.65  =>  0.4855
+   2. vote_priority          raw=0.8360  x  w=0.20  =>  0.1672
+   3. fame                   raw=0.5236  x  w=0.15  =>  0.0785
+  why recommended: sim_norm=0.4855, vote_priority=0.1672, fame=0.0785
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance, Drama
+  keyword       : love triangle, free spirited
+  cast          : Taapsee Pannu, Abhishek Bachchan, Vicky Kaushal, Arun Bali, Ashnoor Kaur
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 16] Yeh Jawaani Hai Deewani (idx=57)
+  final_score=0.7304 | vote_avg=7.27 | vote_count=295
+  base signals: tfidf=0.0000, sbert=0.5402, cf=0.0000, genre_bonus=0.5000, total_sim=0.5330
+  fused signals: sim_norm=0.7566, vote_priority=0.9142, fame=0.3717, rating_norm=0.7269, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7566  x  w=0.65  =>  0.4918
+   2. vote_priority          raw=0.9142  x  w=0.20  =>  0.1828
+   3. fame                   raw=0.3717  x  w=0.15  =>  0.0558
+  why recommended: sim_norm=0.4918, vote_priority=0.1828, fame=0.0558
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance, Comedy
+  keyword       : school friend, friendship, romcom, dysfunctional family, relationship, philosophical, trekking, cheerful, comforting, romance musical
+  cast          : Ranbir Kapoor, Deepika Padukone, Aditya Roy Kapur, Kalki Koechlin, Kunaal Roy Kapur
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 17] Heropanti (idx=796)
+  final_score=0.7291 | vote_avg=5.66 | vote_count=70
+  base signals: tfidf=0.0000, sbert=0.5460, cf=0.0000, genre_bonus=0.5000, total_sim=0.5377
+  fused signals: sim_norm=0.7633, vote_priority=0.8403, fame=0.4322, rating_norm=0.5664, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7633  x  w=0.65  =>  0.4962
+   2. vote_priority          raw=0.8403  x  w=0.20  =>  0.1681
+   3. fame                   raw=0.4322  x  w=0.15  =>  0.0648
+  why recommended: sim_norm=0.4962, vote_priority=0.1681, fame=0.0648
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance, Action
+  keyword       : -
+  cast          : Tiger Shroff, Kriti Sanon, Prakash Raj, Shireesh Sharma, Sandeepa Dhar
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 18] Kites (idx=191)
+  final_score=0.7285 | vote_avg=7.20 | vote_count=221
+  base signals: tfidf=0.0000, sbert=0.5588, cf=0.0000, genre_bonus=0.3333, total_sim=0.5182
+  fused signals: sim_norm=0.7356, vote_priority=0.9065, fame=0.4602, rating_norm=0.7200, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7356  x  w=0.65  =>  0.4782
+   2. vote_priority          raw=0.9065  x  w=0.20  =>  0.1813
+   3. fame                   raw=0.4602  x  w=0.15  =>  0.0690
+  why recommended: sim_norm=0.4782, vote_priority=0.1813, fame=0.0690
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Drama, Action, Romance
+  keyword       : dancing, fugitive, interracial romance, tragic event, desert, dance instructor
+  cast          : Hrithik Roshan, Bárbara Mori, Kabir Bedi, Kangana Ranaut, Nicholas Brown
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 19] Tanu Weds Manu: Returns (idx=1093)
+  final_score=0.7249 | vote_avg=6.88 | vote_count=166
+  base signals: tfidf=0.0000, sbert=0.5176, cf=0.0000, genre_bonus=0.5000, total_sim=0.5145
+  fused signals: sim_norm=0.7304, vote_priority=0.8894, fame=0.4816, rating_norm=0.6880, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7304  x  w=0.65  =>  0.4747
+   2. vote_priority          raw=0.8894  x  w=0.20  =>  0.1779
+   3. fame                   raw=0.4816  x  w=0.15  =>  0.0722
+  why recommended: sim_norm=0.4747, vote_priority=0.1779, fame=0.0722
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Comedy, Romance
+  keyword       : -
+  cast          : Kangana Ranaut, R. Madhavan, Jimmy Shergill, Deepak Dobriyal, Swara Bhasker
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 20] Freddy (idx=1972)
+  final_score=0.7237 | vote_avg=6.92 | vote_count=49
+  base signals: tfidf=0.0000, sbert=0.5714, cf=0.0000, genre_bonus=0.5000, total_sim=0.5585
+  fused signals: sim_norm=0.7929, vote_priority=0.8402, fame=0.2683, rating_norm=0.6918, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7929  x  w=0.65  =>  0.5154
+   2. vote_priority          raw=0.8402  x  w=0.20  =>  0.1680
+   3. fame                   raw=0.2683  x  w=0.15  =>  0.0402
+  why recommended: sim_norm=0.5154, vote_priority=0.1680, fame=0.0402
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Romance, Thriller
+  keyword       : -
+  cast          : Kartik Aaryan, Alaya F, Karan A. Pandit, Sajjad Delafrooz, Jeniffer Piccinato
+  shared_genres : Romance
+  shared_keywords: -
+  shared_cast   : -
+[DEBUG][REQUEST] completed with 20 recommendations
+2026-04-20 18:51:45.217 Please replace `use_container_width` with `width`.
+
+
+
+
+----------------only Descrive vibe (same copy paste od ghajni movie overview sme as above)---------
+
+[DEBUG][REQUEST] ==============================================================
+[DEBUG][REQUEST] Incoming recommendation request
+[DEBUG][REQUEST] movie_title      : -
+[DEBUG][REQUEST] free_text        : A man suffering from anterograde amnesia as a result of a violent attack in the past sets out to avenge his girlfriend's death with the aid of photographs, notes and tattoos all ov...
+[DEBUG][REQUEST] selected_chips   : -
+[DEBUG][REQUEST] query_text       : A man suffering from anterograde amnesia as a result of a violent attack in the past sets out to avenge his girlfriend's death with the aid of photographs, notes and tattoos all ov...
+[DEBUG][REQUEST] query_genres     : -
+[DEBUG][REQUEST] language_codes   : hi
+[DEBUG][REQUEST] decade_filter    : 2020s, 2010s
+[DEBUG][REQUEST] top_n/min_rating : 10 / 5.0
+[DEBUG][REQUEST] resolved_anchor  : none (text/chip mode)
+[DEBUG][REQUEST] route            : hybrid
+
+[DEBUG][HYBRID] ==============================================================
+[DEBUG][HYBRID] Hybrid recommendation pipeline
+[DEBUG] Input query (no anchor movie)
+  query_text   : A man suffering from anterograde amnesia as a result of a violent attack in the past sets out to avenge his girlfriend's death with the aid of photographs, notes and tattoos all over his body
+  query_genres : -
+[DEBUG][HYBRID] final mix: sim_norm*0.65 + vote_priority*0.20 + fame*0.15
+[DEBUG][HYBRID][FILTER] start positive candidates: 23330
+[DEBUG][HYBRID][FILTER] language filter              23330 ->  9257 (removed=14073, kept= 39.7%) | languages=['hi']
+[DEBUG][HYBRID][FILTER] decade filter                 9257 ->  3943 (removed=5314, kept= 42.6%) | decades=['2020s', '2010s']
+[DEBUG][HYBRID][FILTER] vote_average gate             3943 ->  1724 (removed=2219, kept= 43.7%) | vote_avg>=5.0
+[DEBUG][HYBRID][FILTER] non-zero votes                1724 ->  1723 (removed=   1, kept= 99.9%)
+[DEBUG][HYBRID][FILTER] clean title                   1723 ->  1718 (removed=   5, kept= 99.7%)
+[DEBUG][HYBRID] ranked pool size=20 (fetch_n=20, diversify=False)
+[DEBUG][HYBRID] top-10 selected directly by final score
+
+[DEBUG][HYBRID][RANK 01] Deva (idx=51)
+  final_score=0.7151 | vote_avg=6.00 | vote_count=60
+  base signals: tfidf=0.0000, sbert=0.3823, cf=0.0000, genre_bonus=0.0000, total_sim=0.3823
+  fused signals: sim_norm=0.7391, vote_priority=0.8668, fame=0.4089, rating_norm=0.6000, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7391  x  w=0.65  =>  0.4804
+   2. vote_priority          raw=0.8668  x  w=0.20  =>  0.1734
+   3. fame                   raw=0.4089  x  w=0.15  =>  0.0613
+  why recommended: sim_norm=0.4804, vote_priority=0.1734, fame=0.0613
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Action, Thriller, Mystery, Crime
+  keyword       : remake, based on movie
+  cast          : Shahid Kapoor, Pooja Hegde, Pavail Gulati, Pravessh Rana, Girish Kulkarni
+  shared_genres : -
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 02] Bob Biswas (idx=432)
+  final_score=0.7030 | vote_avg=6.55 | vote_count=20
+  base signals: tfidf=0.0000, sbert=0.4015, cf=0.0000, genre_bonus=0.0000, total_sim=0.4015
+  fused signals: sim_norm=0.7761, vote_priority=0.7772, fame=0.2870, rating_norm=0.6550, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7761  x  w=0.65  =>  0.5045
+   2. vote_priority          raw=0.7772  x  w=0.20  =>  0.1554
+   3. fame                   raw=0.2870  x  w=0.15  =>  0.0431
+  why recommended: sim_norm=0.5045, vote_priority=0.1554, fame=0.0431
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Crime, Thriller, Action
+  keyword       : assassin, memory loss, spin off, contract killer
+  cast          : Abhishek Bachchan, Chitrangada Singh, Paran Banerjee, Tina Desai, Purab Kohli
+  shared_genres : -
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 03] Kadak Singh (idx=1746)
+  final_score=0.6708 | vote_avg=5.92 | vote_count=12
+  base signals: tfidf=0.0000, sbert=0.3731, cf=0.0000, genre_bonus=0.0000, total_sim=0.3731
+  fused signals: sim_norm=0.7212, vote_priority=0.7521, fame=0.3436, rating_norm=0.5917, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.7212  x  w=0.65  =>  0.4688
+   2. vote_priority          raw=0.7521  x  w=0.20  =>  0.1504
+   3. fame                   raw=0.3436  x  w=0.15  =>  0.0515
+  why recommended: sim_norm=0.4688, vote_priority=0.1504, fame=0.0515
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Drama, Thriller
+  keyword       : -
+  cast          : Pankaj Tripathi, Sanjana Sanghi, Parvathy Thiruvothu, Jaya Ahsan, Dilip Shankar
+  shared_genres : -
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 04] Rustom (idx=29)
+  final_score=0.6672 | vote_avg=6.70 | vote_count=137
+  base signals: tfidf=0.0000, sbert=0.3459, cf=0.0000, genre_bonus=0.0000, total_sim=0.3459
+  fused signals: sim_norm=0.6688, vote_priority=0.8810, fame=0.3755, rating_norm=0.6700, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.6688  x  w=0.65  =>  0.4347
+   2. vote_priority          raw=0.8810  x  w=0.20  =>  0.1762
+   3. fame                   raw=0.3755  x  w=0.15  =>  0.0563
+  why recommended: sim_norm=0.4347, vote_priority=0.1762, fame=0.0563
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Thriller, Drama, Crime
+  keyword       : jury trial
+  cast          : Akshay Kumar, Ileana D'Cruz, Esha Gupta, Arjan Bajwa, Usha Nadkarni
+  shared_genres : -
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 05] Badla (idx=112)
+  final_score=0.6592 | vote_avg=7.25 | vote_count=167
+  base signals: tfidf=0.0000, sbert=0.3220, cf=0.0000, genre_bonus=0.0000, total_sim=0.3220
+  fused signals: sim_norm=0.6225, vote_priority=0.8968, fame=0.5016, rating_norm=0.7246, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.6225  x  w=0.65  =>  0.4046
+   2. vote_priority          raw=0.8968  x  w=0.20  =>  0.1794
+   3. fame                   raw=0.5016  x  w=0.15  =>  0.0752
+  why recommended: sim_norm=0.4046, vote_priority=0.1794, fame=0.0752
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Crime, Thriller, Mystery, Drama
+  keyword       : based on movie
+  cast          : Amitabh Bachchan, Taapsee Pannu, Tony Luke, Amrita Singh, Manav Kaul
+  shared_genres : -
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 06] Gangs of Wasseypur - Part 1 (idx=179)
+  final_score=0.6486 | vote_avg=7.06 | vote_count=427
+  base signals: tfidf=0.0000, sbert=0.3028, cf=0.0000, genre_bonus=0.0000, total_sim=0.3028
+  fused signals: sim_norm=0.5853, vote_priority=0.9297, fame=0.5481, rating_norm=0.7063, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.5853  x  w=0.65  =>  0.3805
+   2. vote_priority          raw=0.9297  x  w=0.20  =>  0.1859
+   3. fame                   raw=0.5481  x  w=0.15  =>  0.0822
+  why recommended: sim_norm=0.3805, vote_priority=0.1859, fame=0.0822
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Action, Thriller, Crime
+  keyword       : mafia, gang, coal mining
+  cast          : Manoj Bajpayee, Richa Chadha, Tigmanshu Dhulia, Nawazuddin Siddiqui, Reema Sen
+  shared_genres : -
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 07] Mrs. Serial Killer (idx=844)
+  final_score=0.6483 | vote_avg=6.24 | vote_count=93
+  base signals: tfidf=0.0000, sbert=0.3304, cf=0.0000, genre_bonus=0.0000, total_sim=0.3304
+  fused signals: sim_norm=0.6388, vote_priority=0.8750, fame=0.3871, rating_norm=0.6237, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.6388  x  w=0.65  =>  0.4152
+   2. vote_priority          raw=0.8750  x  w=0.20  =>  0.1750
+   3. fame                   raw=0.3871  x  w=0.15  =>  0.0581
+  why recommended: sim_norm=0.4152, vote_priority=0.1750, fame=0.0581
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Thriller
+  keyword       : murder, serial killer, female serial killer
+  cast          : Jacqueline Fernandez, Manoj Bajpayee, Mohit Raina, Darshan Jariwala, Zayn Marie Khan
+  shared_genres : -
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 08] Aakrosh (idx=201)
+  final_score=0.6474 | vote_avg=7.00 | vote_count=26
+  base signals: tfidf=0.0000, sbert=0.3159, cf=0.0000, genre_bonus=0.0000, total_sim=0.3159
+  fused signals: sim_norm=0.6106, vote_priority=0.7463, fame=0.6752, rating_norm=0.7000, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.6106  x  w=0.65  =>  0.3969
+   2. vote_priority          raw=0.7463  x  w=0.20  =>  0.1493
+   3. fame                   raw=0.6752  x  w=0.15  =>  0.1013
+  why recommended: sim_norm=0.3969, vote_priority=0.1493, fame=0.1013
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Action, Drama, Crime, Thriller
+  keyword       : -
+  cast          : Ajay Devgn, Akshaye Khanna, Bipasha Basu, Reema Sen, Paresh Rawal
+  shared_genres : -
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 09] Chup (idx=518)
+  final_score=0.6467 | vote_avg=6.58 | vote_count=45
+  base signals: tfidf=0.0000, sbert=0.3253, cf=0.0000, genre_bonus=0.0000, total_sim=0.3253
+  fused signals: sim_norm=0.6288, vote_priority=0.8350, fame=0.4732, rating_norm=0.6578, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.6288  x  w=0.65  =>  0.4087
+   2. vote_priority          raw=0.8350  x  w=0.20  =>  0.1670
+   3. fame                   raw=0.4732  x  w=0.15  =>  0.0710
+  why recommended: sim_norm=0.4087, vote_priority=0.1670, fame=0.0710
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Crime, Thriller
+  keyword       : satire, slasher, psychological thriller, film critic
+  cast          : Dulquer Salmaan, Sunny Deol, Shreya Dhanwanthary, Pooja Bhatt, Saranya Ponvannan
+  shared_genres : -
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][HYBRID][RANK 10] The Tashkent Files (idx=1021)
+  final_score=0.6444 | vote_avg=7.34 | vote_count=56
+  base signals: tfidf=0.0000, sbert=0.3170, cf=0.0000, genre_bonus=0.0000, total_sim=0.3170
+  fused signals: sim_norm=0.6128, vote_priority=0.8336, fame=0.5287, rating_norm=0.7339, franchise_boost=0.0000
+[DEBUG][HYBRID] weighted score breakdown
+   1. sim_norm               raw=0.6128  x  w=0.65  =>  0.3983
+   2. vote_priority          raw=0.8336  x  w=0.20  =>  0.1667
+   3. fame                   raw=0.5287  x  w=0.15  =>  0.0793
+  why recommended: sim_norm=0.3983, vote_priority=0.1667, fame=0.0793
+  gates: lang=True, decade=True, vote_avg=True, nonzero_votes=True, vote_count=True, clean_title=True
+  genre         : Drama, Mystery, Thriller, History
+  keyword       : based on true story, death, government conspiracy
+  cast          : Naseeruddin Shah, Mithun Chakraborty, Shweta Basu Prasad, Asif Basra, Mandira Bedi
+  shared_genres : -
+  shared_keywords: -
+  shared_cast   : -
+[DEBUG][REQUEST] completed with 10 recommendations
+2026-04-20 19:01:12.771 Please replace `use_container_width` with `width`.
+
+
+---------------onlt movie title (Ghajini)--------
+
+[DEBUG][REQUEST] ==============================================================
+[DEBUG][REQUEST] Incoming recommendation request
+[DEBUG][REQUEST] movie_title      : Ghajini
+[DEBUG][REQUEST] free_text        : -
+[DEBUG][REQUEST] selected_chips   : -
+[DEBUG][REQUEST] query_text       : -
+[DEBUG][REQUEST] query_genres     : -
+[DEBUG][REQUEST] language_codes   : hi
+[DEBUG][REQUEST] decade_filter    : 2020s, 2010s
+[DEBUG][REQUEST] top_n/min_rating : 15 / 5.0
+[DEBUG][REQUEST] resolved_anchor  : idx=60, title=Ghajini
+\n[DEBUG] Resolved anchor movie
+  title       : Ghajini
+  year/lang   : 2008 / hi
+  vote        : avg=6.99, count=442
+  genres      : Action, Romance, Thriller
+  keywords    : tattoo, businessman, love at first sight, gangster, diary, villain, revenge, brutality, police officer, polaroid, medical student
+  cast        : Aamir Khan, Asin Thottumkal, Jiah Khan, Pradeep Ram Singh Rawat, Riyaz Khan
+  overview    : A man suffering from anterograde amnesia as a result of a violent attack in the past sets out to avenge his girlfriend's death with the aid of photographs, notes and tattoos all over his body.
+[DEBUG][REQUEST] route            : semantic(title-only)
+
+[DEBUG][SEMANTIC] ==============================================================
+[DEBUG][SEMANTIC] Title-only semantic recommendation
+\n[DEBUG] Input movie
+  title       : Ghajini
+  year/lang   : 2008 / hi
+  vote        : avg=6.99, count=442
+  genres      : Action, Romance, Thriller
+  keywords    : tattoo, businessman, love at first sight, gangster, diary, villain, revenge, brutality, police officer, polaroid, medical student
+  cast        : Aamir Khan, Asin Thottumkal, Jiah Khan, Pradeep Ram Singh Rawat, Riyaz Khan
+  overview    : A man suffering from anterograde amnesia as a result of a violent attack in the past sets out to avenge his girlfriend's death with the aid of photographs, notes and tattoos all over his body.
+[DEBUG][SEMANTIC][FILTER] start candidates             23331 -> 23331 (removed=   0, kept=100.0%)
+[DEBUG][SEMANTIC][FILTER] clean title                  23331 -> 23266 (removed=  65, kept= 99.7%)
+[DEBUG][SEMANTIC][FILTER] exclude same title           23266 -> 23264 (removed=   2, kept=100.0%)
+[DEBUG][SEMANTIC][FILTER] genre overlap gate           23264 ->  1994 (removed=21270, kept=  8.6%) | required_overlap>=2
+[DEBUG][SEMANTIC][FILTER] language filter               1994 ->   657 (removed=1337, kept= 32.9%) | languages=['hi']
+[DEBUG][SEMANTIC][FILTER] decade filter                  657 ->   264 (removed= 393, kept= 40.2%) | decades=['2020s', '2010s']
+[DEBUG][SEMANTIC][FILTER] vote_average gate              264 ->   172 (removed=  92, kept= 65.2%) | vote_avg>=5.0 or franchise>=0.75
+[DEBUG][SEMANTIC][FILTER] non-zero votes                 172 ->   172 (removed=   0, kept=100.0%)
+[DEBUG][SEMANTIC][FILTER] vote_count floor               172 ->   120 (removed=  52, kept= 69.8%) | vote_count>20 or franchise>=0.75
+[DEBUG][SEMANTIC][FILTER] year window                    120 ->    79 (removed=  41, kept= 65.8%) | |year-query_year|<=12
+[DEBUG][SEMANTIC] final shortlist: 15 (franchise_priority=0, remaining=15)
+
+[DEBUG][SEMANTIC][RANK 01] Ek Tha Tiger (idx=125)
+  final_semantic_score=0.7432 | vote_count=215 | vote_avg=6.20
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.7852  x  w=0.36  =>  0.2827
+   2. genre_jaccard          raw=1.0000  x  w=0.16  =>  0.1600
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.9460  x  w=0.05  =>  0.0473
+   6. vote_confidence        raw=0.8704  x  w=0.14  =>  0.1219
+   7. vote_priority_year     raw=0.8941  x  w=0.14  =>  0.1252
+   8. rating_norm            raw=0.6185  x  w=0.01  =>  0.0062
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2827, genre_jaccard=0.1600, vote_priority_year=0.1252
+  genre         : Action, Thriller, Romance
+  keyword       : spy, secret agent, romantic, tragic
+  cast          : Salman Khan, Katrina Kaif, Girish Karnad, Ranvir Shorey, Gavie Chahal
+  shared_genres : Action, Romance, Thriller
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 02] Ek Villain (idx=153)
+  final_semantic_score=0.7129 | vote_count=170 | vote_avg=6.52
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.8291  x  w=0.36  =>  0.2985
+   2. genre_jaccard          raw=0.7500  x  w=0.16  =>  0.1200
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0833  x  w=0.03  =>  0.0025
+   5. temporal_soft          raw=0.8825  x  w=0.05  =>  0.0441
+   6. vote_confidence        raw=0.8325  x  w=0.14  =>  0.1166
+   7. vote_priority_year     raw=0.8907  x  w=0.14  =>  0.1247
+   8. rating_norm            raw=0.6504  x  w=0.01  =>  0.0065
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2985, vote_priority_year=0.1247, genre_jaccard=0.1200
+  genre         : Romance, Action, Crime, Thriller
+  keyword       : revenge, serial killer
+  cast          : Sidharth Malhotra, Shraddha Kapoor, Riteish Deshmukh, Aamna Shariff, Asif Basra
+  shared_genres : Action, Romance, Thriller
+  shared_keywords: revenge
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 03] Don 2 (idx=246)
+  final_semantic_score=0.6936 | vote_count=260 | vote_avg=6.95
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.7719  x  w=0.36  =>  0.2779
+   2. genre_jaccard          raw=0.6667  x  w=0.16  =>  0.1067
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.9692  x  w=0.05  =>  0.0485
+   6. vote_confidence        raw=0.9010  x  w=0.14  =>  0.1261
+   7. vote_priority_year     raw=0.9113  x  w=0.14  =>  0.1276
+   8. rating_norm            raw=0.6933  x  w=0.01  =>  0.0069
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2779, vote_priority_year=0.1276, vote_confidence=0.1261
+  genre         : Action, Thriller
+  keyword       : sequel
+  cast          : Shah Rukh Khan, Priyanka Chopra Jonas, Boman Irani, Kunal Kapoor, Lara Dutta
+  shared_genres : Action, Thriller
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 04] Agent Vinod (idx=492)
+  final_semantic_score=0.6777 | vote_count=66 | vote_avg=5.41
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.8174  x  w=0.36  =>  0.2943
+   2. genre_jaccard          raw=0.7500  x  w=0.16  =>  0.1200
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.9460  x  w=0.05  =>  0.0473
+   6. vote_confidence        raw=0.6808  x  w=0.14  =>  0.0953
+   7. vote_priority_year     raw=0.8247  x  w=0.14  =>  0.1155
+   8. rating_norm            raw=0.5373  x  w=0.01  =>  0.0054
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2943, genre_jaccard=0.1200, vote_priority_year=0.1155
+  genre         : Action, Adventure, Thriller, Romance
+  keyword       : threat, seductress
+  cast          : Saif Ali Khan, Kareena Kapoor Khan, Adil Hussain, Ravi Kishan, Prem Chopra
+  shared_genres : Action, Romance, Thriller
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 05] Gangs of Wasseypur - Part 1 (idx=179)
+  final_semantic_score=0.6757 | vote_count=427 | vote_avg=7.06
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.7607  x  w=0.36  =>  0.2739
+   2. genre_jaccard          raw=0.5000  x  w=0.16  =>  0.0800
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.9460  x  w=0.05  =>  0.0473
+   6. vote_confidence        raw=0.9811  x  w=0.14  =>  0.1374
+   7. vote_priority_year     raw=0.9297  x  w=0.14  =>  0.1302
+   8. rating_norm            raw=0.7054  x  w=0.01  =>  0.0071
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2739, vote_confidence=0.1374, vote_priority_year=0.1302
+  genre         : Action, Thriller, Crime
+  keyword       : mafia, gang, coal mining
+  cast          : Manoj Bajpayee, Richa Chadha, Tigmanshu Dhulia, Nawazuddin Siddiqui, Reema Sen
+  shared_genres : Action, Thriller
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 06] R... Rajkumar (idx=407)
+  final_semantic_score=0.6746 | vote_count=100 | vote_avg=6.12
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.8092  x  w=0.36  =>  0.2913
+   2. genre_jaccard          raw=0.6667  x  w=0.16  =>  0.1067
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.9169  x  w=0.05  =>  0.0458
+   6. vote_confidence        raw=0.7473  x  w=0.14  =>  0.1046
+   7. vote_priority_year     raw=0.8577  x  w=0.14  =>  0.1201
+   8. rating_norm            raw=0.6089  x  w=0.01  =>  0.0061
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2913, vote_priority_year=0.1201, genre_jaccard=0.1067
+  genre         : Action, Romance
+  keyword       : hero, fighter, love, killer, lovesick, damsel in distress
+  cast          : Shahid Kapoor, Sonakshi Sinha, Mukul Dev, Ashish Vidhyarthi, Sonu Sood
+  shared_genres : Action, Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 07] Bang Bang! (idx=205)
+  final_semantic_score=0.6736 | vote_count=250 | vote_avg=6.19
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.7587  x  w=0.36  =>  0.2731
+   2. genre_jaccard          raw=0.6000  x  w=0.16  =>  0.0960
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0526  x  w=0.03  =>  0.0016
+   5. temporal_soft          raw=0.8825  x  w=0.05  =>  0.0441
+   6. vote_confidence        raw=0.8947  x  w=0.14  =>  0.1253
+   7. vote_priority_year     raw=0.9095  x  w=0.14  =>  0.1273
+   8. rating_norm            raw=0.6175  x  w=0.01  =>  0.0062
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2731, vote_priority_year=0.1273, vote_confidence=0.1253
+  genre         : Action, Adventure, Comedy, Romance, Thriller
+  keyword       : rescue, dancing, london, england, secret agent, heist, revenge, jewel thief, jewelry heist, motorcycle chase
+  cast          : Hrithik Roshan, Katrina Kaif, Danny Denzongpa, Javed Jaffrey, Jimmy Shergill
+  shared_genres : Action, Romance, Thriller
+  shared_keywords: revenge
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 08] Kites (idx=191)
+  final_semantic_score=0.6725 | vote_count=221 | vote_avg=7.20
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.7963  x  w=0.36  =>  0.2867
+   2. genre_jaccard          raw=0.5000  x  w=0.16  =>  0.0800
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.9862  x  w=0.05  =>  0.0493
+   6. vote_confidence        raw=0.8748  x  w=0.14  =>  0.1225
+   7. vote_priority_year     raw=0.9065  x  w=0.14  =>  0.1269
+   8. rating_norm            raw=0.7181  x  w=0.01  =>  0.0072
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2867, vote_priority_year=0.1269, vote_confidence=0.1225
+  genre         : Drama, Action, Romance
+  keyword       : dancing, fugitive, interracial romance, tragic event, desert, dance instructor
+  cast          : Hrithik Roshan, Bárbara Mori, Kabir Bedi, Kangana Ranaut, Nicholas Brown
+  shared_genres : Action, Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 09] Baby (idx=212)
+  final_semantic_score=0.6720 | vote_count=188 | vote_avg=6.80
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.7562  x  w=0.36  =>  0.2722
+   2. genre_jaccard          raw=0.6667  x  w=0.16  =>  0.1067
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.8435  x  w=0.05  =>  0.0422
+   6. vote_confidence        raw=0.8487  x  w=0.14  =>  0.1188
+   7. vote_priority_year     raw=0.8950  x  w=0.14  =>  0.1253
+   8. rating_norm            raw=0.6783  x  w=0.01  =>  0.0068
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2722, vote_priority_year=0.1253, vote_confidence=0.1188
+  genre         : Action, Thriller
+  keyword       : espionage, elite unit, terrorism, commando
+  cast          : Akshay Kumar, Anupam Kher, Kay Kay Menon, Rana Daggubati, Danny Denzongpa
+  shared_genres : Action, Thriller
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 10] Fan (idx=252)
+  final_semantic_score=0.6650 | vote_count=266 | vote_avg=6.30
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.7834  x  w=0.36  =>  0.2820
+   2. genre_jaccard          raw=0.5000  x  w=0.16  =>  0.0800
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0667  x  w=0.03  =>  0.0020
+   5. temporal_soft          raw=0.8007  x  w=0.05  =>  0.0400
+   6. vote_confidence        raw=0.9047  x  w=0.14  =>  0.1267
+   7. vote_priority_year     raw=0.9145  x  w=0.14  =>  0.1280
+   8. rating_norm            raw=0.6288  x  w=0.01  =>  0.0063
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2820, vote_priority_year=0.1280, vote_confidence=0.1267
+  genre         : Action, Adventure, Thriller
+  keyword       : obsession, revenge, fan culture, obsessed fan, deconstruction of celebrity
+  cast          : Shah Rukh Khan, Deepika Amin, Yogendra Tiku, Shriya Pilgaonkar, Sayani Gupta
+  shared_genres : Action, Thriller
+  shared_keywords: revenge
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 11] Baaghi (idx=353)
+  final_semantic_score=0.6650 | vote_count=144 | vote_avg=6.40
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.7277  x  w=0.36  =>  0.2620
+   2. genre_jaccard          raw=0.7500  x  w=0.16  =>  0.1200
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.8007  x  w=0.05  =>  0.0400
+   6. vote_confidence        raw=0.8058  x  w=0.14  =>  0.1128
+   7. vote_priority_year     raw=0.8843  x  w=0.14  =>  0.1238
+   8. rating_norm            raw=0.6377  x  w=0.01  =>  0.0064
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2620, vote_priority_year=0.1238, genre_jaccard=0.1200
+  genre         : Action, Thriller, Romance, Adventure
+  keyword       : martial arts, kidnapping, rebel
+  cast          : Tiger Shroff, Shraddha Kapoor, Sunil Grover, Sudheer Babu, Saurav Chakrabarti
+  shared_genres : Action, Romance, Thriller
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 12] Race 2 (idx=499)
+  final_semantic_score=0.6650 | vote_count=121 | vote_avg=5.42
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.7685  x  w=0.36  =>  0.2767
+   2. genre_jaccard          raw=0.6667  x  w=0.16  =>  0.1067
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.9169  x  w=0.05  =>  0.0458
+   6. vote_confidence        raw=0.7779  x  w=0.14  =>  0.1089
+   7. vote_priority_year     raw=0.8679  x  w=0.14  =>  0.1215
+   8. rating_norm            raw=0.5397  x  w=0.01  =>  0.0054
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2767, vote_priority_year=0.1215, vote_confidence=0.1089
+  genre         : Action, Thriller
+  keyword       : sequel
+  cast          : Saif Ali Khan, John Abraham, Deepika Padukone, Jacqueline Fernandez, Anil Kapoor
+  shared_genres : Action, Thriller
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 13] Karthik Calling Karthik (idx=890)
+  final_semantic_score=0.6626 | vote_count=102 | vote_avg=6.34
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.7593  x  w=0.36  =>  0.2733
+   2. genre_jaccard          raw=0.6667  x  w=0.16  =>  0.1067
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.9862  x  w=0.05  =>  0.0493
+   6. vote_confidence        raw=0.7505  x  w=0.14  =>  0.1051
+   7. vote_priority_year     raw=0.8706  x  w=0.14  =>  0.1219
+   8. rating_norm            raw=0.6306  x  w=0.01  =>  0.0063
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2733, vote_priority_year=0.1219, genre_jaccard=0.1067
+  genre         : Romance, Thriller
+  keyword       : schizophrenia, childhood trauma, alter ego, mental control, haunted by the past
+  cast          : Farhan Akhtar, Deepika Padukone, Ram Kapoor, Shefali Shah, Vivan Bhatena
+  shared_genres : Romance, Thriller
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 14] Heropanti (idx=796)
+  final_semantic_score=0.6596 | vote_count=70 | vote_avg=5.66
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.8025  x  w=0.36  =>  0.2889
+   2. genre_jaccard          raw=0.6667  x  w=0.16  =>  0.1067
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.8825  x  w=0.05  =>  0.0441
+   6. vote_confidence        raw=0.6902  x  w=0.14  =>  0.0966
+   7. vote_priority_year     raw=0.8403  x  w=0.14  =>  0.1176
+   8. rating_norm            raw=0.5627  x  w=0.01  =>  0.0056
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2889, vote_priority_year=0.1176, genre_jaccard=0.1067
+  genre         : Romance, Action
+  keyword       : -
+  cast          : Tiger Shroff, Kriti Sanon, Prakash Raj, Shireesh Sharma, Sandeepa Dhar
+  shared_genres : Action, Romance
+  shared_keywords: -
+  shared_cast   : -
+
+[DEBUG][SEMANTIC][RANK 15] War (idx=95)
+  final_semantic_score=0.6526 | vote_count=375 | vote_avg=6.74
+[DEBUG][SEMANTIC] weighted score breakdown
+   1. sbert                  raw=0.7476  x  w=0.36  =>  0.2691
+   2. genre_jaccard          raw=0.5000  x  w=0.16  =>  0.0800
+   3. cast_jaccard           raw=0.0000  x  w=0.06  =>  0.0000
+   4. keyword_jaccard        raw=0.0000  x  w=0.03  =>  0.0000
+   5. temporal_soft          raw=0.6570  x  w=0.05  =>  0.0328
+   6. vote_confidence        raw=0.9601  x  w=0.14  =>  0.1344
+   7. vote_priority_year     raw=0.9250  x  w=0.14  =>  0.1295
+   8. rating_norm            raw=0.6727  x  w=0.01  =>  0.0067
+   9. franchise_boost        raw=0.0000  x  w=0.05  =>  0.0000
+  why recommended: sbert=0.2691, vote_confidence=0.1344, vote_priority_year=0.1295
+  genre         : Action, Thriller, Adventure
+  keyword       : friendship, chase, gun, italy, portugal, spy, traitor, two man army, karate, love, betrayal, shootout ... (+8 more)
+  cast          : Hrithik Roshan, Tiger Shroff, Vaani Kapoor, Ashutosh Rana, Anupriya Goenka
+  shared_genres : Action, Thriller
+  shared_keywords: -
+  shared_cast   : -
+[DEBUG][REQUEST] completed with 15 recommendations
+2026-04-20 19:02:45.352 Pl
