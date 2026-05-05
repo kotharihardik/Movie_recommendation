@@ -2,7 +2,7 @@
 llm_client.py
 -------------
 Generates personalised "Why you'll love this" justification sentences
-per recommended movie using the Anthropic Claude API.
+per recommended movie using the Gemini API.
 
 If no API key is provided (or the call fails), a deterministic
 rule-based fallback produces a reasonable sentence without any
@@ -10,14 +10,10 @@ external calls.
 """
 
 import hashlib
-import random
+import re
 from typing import Optional
 
-try:
-    import anthropic
-    _ANTHROPIC_AVAILABLE = True
-except ImportError:
-    _ANTHROPIC_AVAILABLE = False
+import requests
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -49,8 +45,29 @@ _GENRE_ADJ = {
 _SYSTEM_PROMPT = (
     "You are a witty, knowledgeable Indian cinema expert. "
     "You write short, personalised movie recommendations that feel like they come "
-    "from a knowledgeable friend — enthusiastic, specific, never generic."
+    "from a knowledgeable friend — enthusiastic, specific, never generic. "
+    "Do not use emojis, icons, or decorative symbols."
 )
+
+_GEMINI_MODEL = "gemini-1.5-flash"
+_GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+
+_EMOJI_PATTERN = re.compile(
+    "["
+    "\U0001F1E6-\U0001F1FF"
+    "\U0001F300-\U0001FAFF"
+    "\U00002600-\U000026FF"
+    "\U00002700-\U000027BF"
+    "]+",
+    flags=re.UNICODE,
+)
+
+
+def strip_emoji(text: str) -> str:
+    """Remove common emoji and emoji-style symbols from display text."""
+    cleaned = _EMOJI_PATTERN.sub("", text)
+    cleaned = cleaned.replace("\ufe0f", "").replace("\u200d", "")
+    return re.sub(r"\s{2,}", " ", cleaned).strip()
 
 # ── Rule-based fallback ───────────────────────────────────────────────────────
 
@@ -82,22 +99,78 @@ def rule_based_justification(movie) -> str:
 
 # ── LLM justification ─────────────────────────────────────────────────────────
 
+def _clean_llm_text(text: str) -> str:
+    """Normalize model output into a single clean sentence."""
+    cleaned = strip_emoji(text.strip().strip('"').strip("'"))
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    if len(cleaned) > 220:
+        cleaned = cleaned[:217] + "..."
+    return cleaned
+
+
+def _cache_namespace(api_key: Optional[str], model: str = _GEMINI_MODEL) -> str:
+    """Namespace cache entries by backend and API key fingerprint."""
+    if not api_key:
+        return "fallback"
+    key_hash = hashlib.md5(api_key.encode()).hexdigest()[:10]
+    return f"gemini:{key_hash}:{model}"
+
+
+def _call_gemini(
+    user_prompt: str,
+    api_key: str,
+    model: str = _GEMINI_MODEL,
+) -> str:
+    """Call Gemini via the public REST API and return the generated text."""
+    payload = {
+        "systemInstruction": {
+            "parts": [{"text": _SYSTEM_PROMPT}],
+        },
+        "contents": [
+            {
+                "role": "user",
+                "parts": [{"text": user_prompt}],
+            }
+        ],
+        "generationConfig": {
+            "temperature": 0.7,
+            "topP": 0.9,
+            "maxOutputTokens": 120,
+        },
+    }
+    url = _GEMINI_ENDPOINT.format(model=model)
+    response = requests.post(url, params={"key": api_key}, json=payload, timeout=20)
+    response.raise_for_status()
+    data = response.json()
+
+    candidates = data.get("candidates") or []
+    if not candidates:
+        raise ValueError("Gemini returned no candidates")
+
+    content = candidates[0].get("content") or {}
+    parts = content.get("parts") or []
+    text = "".join(part.get("text", "") for part in parts if isinstance(part, dict)).strip()
+    if not text:
+        raise ValueError("Gemini returned empty content")
+    return text
+
+
 def get_justification(
     movie,
     query_bundle: str,
     api_key:      Optional[str] = None,
-    model:        str = "claude-haiku-4-5-20251001",
-) -> str:
+    model:        str = _GEMINI_MODEL,
+) -> tuple[str, str]:
     """
-    Call Claude to generate one personalised justification sentence.
+    Call Gemini to generate one personalised justification sentence.
     Falls back to rule_based_justification on any error or missing key.
     """
-    if not api_key or not _ANTHROPIC_AVAILABLE:
-        return rule_based_justification(movie)
+    if not api_key:
+        return rule_based_justification(movie), "fallback"
+
+    cache_namespace = _cache_namespace(api_key, model)
 
     try:
-        client = anthropic.Anthropic(api_key=api_key)
-
         genres_str   = ", ".join(movie.genres[:4]) if movie.genres else "Drama"
         cast_str     = ", ".join(movie.cast[:3])   if movie.cast   else "Unknown"
         overview_snip = (movie.overview[:150] + "...") if len(movie.overview) > 150 else movie.overview
@@ -120,21 +193,11 @@ Rules:
 - Sound like an enthusiastic knowledgeable friend, not a press release
 - Write the justification only — no preamble, no labels"""
 
-        message = client.messages.create(
-            model      = model,
-            max_tokens = 100,
-            system     = _SYSTEM_PROMPT,
-            messages   = [{"role": "user", "content": user_prompt}],
-        )
-
-        text = message.content[0].text.strip().strip('"').strip("'")
-        # Safety: truncate if unexpectedly long
-        if len(text) > 220:
-            text = text[:217] + "..."
-        return text
+        text = _call_gemini(user_prompt, api_key=api_key, model=model)
+        return _clean_llm_text(text), cache_namespace
 
     except Exception:
-        return rule_based_justification(movie)
+        return rule_based_justification(movie), cache_namespace
 
 
 # ── Cache helpers ─────────────────────────────────────────────────────────────
@@ -148,11 +211,12 @@ def batch_justify(
     movies:               list,
     query_bundle:         str,
     api_key:              Optional[str] = None,
+    model:                str = _GEMINI_MODEL,
     justification_cache:  Optional[dict] = None,
 ) -> tuple:
     """
     Fill in movie.justification for each movie.
-    Checks cache keyed by (movie_id, query_hash) before calling the API.
+    Checks cache keyed by (backend, movie_id, query_hash) before calling the API.
 
     Returns:
         (updated_movies_list, updated_cache_dict)
@@ -161,14 +225,15 @@ def batch_justify(
         justification_cache = {}
 
     q_hash = _query_hash(query_bundle)
+    backend_tag = _cache_namespace(api_key, model)
 
     for movie in movies:
-        cache_key = f"{movie.movie_id}_{q_hash}"
+        cache_key = f"{backend_tag}:{movie.movie_id}_{q_hash}"
         if cache_key in justification_cache:
             movie.justification = justification_cache[cache_key]
         else:
-            just = get_justification(movie, query_bundle, api_key=api_key)
+            just, cache_backend = get_justification(movie, query_bundle, api_key=api_key, model=model)
             movie.justification = just
-            justification_cache[cache_key] = just
+            justification_cache[f"{cache_backend}:{movie.movie_id}_{q_hash}"] = just
 
     return movies, justification_cache

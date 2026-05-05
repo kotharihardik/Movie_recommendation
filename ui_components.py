@@ -14,6 +14,7 @@ import pandas as pd
 import streamlit as st
 
 from favourites import export_favourites_csv
+from llm_client import strip_emoji
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -27,11 +28,11 @@ MOOD_CHIPS = [
 ]
 
 LANGUAGE_INFO = {
-    "hi": {"emoji": "🟢", "label": "Hindi",     "badge_css": "lang-hi"},
-    "ta": {"emoji": "🔴", "label": "Tamil",     "badge_css": "lang-ta"},
-    "te": {"emoji": "🟠", "label": "Telugu",    "badge_css": "lang-te"},
-    "ml": {"emoji": "🔵", "label": "Malayalam", "badge_css": "lang-ml"},
-    "kn": {"emoji": "🟣", "label": "Kannada",   "badge_css": "lang-kn"},
+    "hi": {"label": "Hindi",     "badge_css": "lang-hi"},
+    "ta": {"label": "Tamil",     "badge_css": "lang-ta"},
+    "te": {"label": "Telugu",    "badge_css": "lang-te"},
+    "ml": {"label": "Malayalam", "badge_css": "lang-ml"},
+    "kn": {"label": "Kannada",   "badge_css": "lang-kn"},
 }
 
 TMDB_BASE  = "https://image.tmdb.org/t/p"
@@ -100,14 +101,6 @@ def inject_custom_css() -> None:
         margin-bottom: 24px;
         position: relative;
         overflow: hidden;
-    }
-    .cm-header::before {
-        content: "🎬";
-        position: absolute;
-        right: 24px; top: 50%;
-        transform: translateY(-50%);
-        font-size: 4em;
-        opacity: 0.08;
     }
     .cm-header-title {
         font-family: 'Bebas Neue', cursive;
@@ -345,7 +338,7 @@ def render_header() -> None:
     """Render the CineMatch India banner."""
     st.markdown("""
     <div class="cm-header">
-        <div class="cm-header-title">🎬 CineMatch India</div>
+        <div class="cm-header-title">CineMatch India</div>
         <div class="cm-header-sub">Your personal Bollywood & South Indian movie recommender</div>
         <div class="cm-header-stats">
             <span class="cm-stat">25,000+ Movies</span>
@@ -374,19 +367,25 @@ def render_hero_section(df=None) -> None:
     </div>
     """, unsafe_allow_html=True)
 
-    # Show 4 random non-adult teaser posters from post-2015 Action titles.
+    # Show 4 dynamic teaser posters from recent, popular Bollywood action titles.
     if df is not None and len(df) > 0:
         st.markdown(
-            "<p style='text-align:center;color:#444;font-size:0.85em;margin-bottom:10px'> Action picks after 2015</p>",
+            "<p style='text-align:center;color:#444;font-size:0.85em;margin-bottom:10px'> Recent Bollywood action picks</p>",
             unsafe_allow_html=True,
         )
         try:
             pool = df.copy()
+            current_year = int(pd.Timestamp.now().year)
+            min_year = current_year - 5
 
             # Keep only rows with valid posters.
             if "poster_path" in pool.columns:
                 poster_mask = pool["poster_path"].fillna("").astype(str).str.len() > 5
                 pool = pool[poster_mask]
+
+            # Keep only Bollywood / Hindi titles.
+            if "language" in pool.columns:
+                pool = pool[pool["language"].astype(str).str.lower() == "hi"]
 
             # Drop adult titles when the metadata column exists.
             if "adult" in pool.columns:
@@ -404,17 +403,22 @@ def render_hero_section(df=None) -> None:
                 pool = pool[~adult_mask]
 
             if "release_year" in pool.columns:
-                year_mask = pd.to_numeric(pool["release_year"], errors="coerce").fillna(0) > 2015
+                year_mask = pd.to_numeric(pool["release_year"], errors="coerce").fillna(0) >= min_year
                 pool = pool[year_mask]
 
             if "genres" in pool.columns:
-                action_pool = pool[pool["genres"].apply(_has_action)]
+                action_pool = pool[pool["genres"].apply(_has_action_genre)]
             else:
                 action_pool = pool.iloc[0:0]
 
             source_pool = action_pool
-            sample_base = source_pool.nlargest(min(300, len(source_pool)), "popularity")
-            sample = sample_base.sample(min(4, len(sample_base))) if len(sample_base) > 0 else sample_base
+            if len(source_pool) == 0:
+                sample = source_pool
+            elif "popularity" in source_pool.columns:
+                sample_base = source_pool.nlargest(min(16, len(source_pool)), "popularity")
+                sample = sample_base.sample(min(4, len(sample_base)), random_state=int(pd.Timestamp.now().dayofyear))
+            else:
+                sample = source_pool.sample(min(4, len(source_pool)), random_state=int(pd.Timestamp.now().dayofyear))
 
             cols = st.columns(4)
             for i, (_, row) in enumerate(sample.iterrows()):
@@ -423,11 +427,11 @@ def render_hero_section(df=None) -> None:
                         get_poster_url(str(row.get("poster_path", "")), "w185"),
                         use_container_width=True,
                     )
-                    lang = LANGUAGE_INFO.get(str(row.get("language", "")), {})
-                    lang_emoji = lang.get("emoji", "🎬")
+                    year_txt = int(row.get("release_year", 0)) if pd.notna(row.get("release_year", 0)) else current_year
+                    popularity_txt = float(row.get("popularity", 0) or 0)
                     st.caption(
-                        f"{lang_emoji} **{row['title']}**  \n"
-                        f"{row.get('release_year', '')} · ★ {row.get('vote_average', 0):.1f}"
+                        f"**{row['title']}**  \n"
+                        f"{year_txt} · ★ {row.get('vote_average', 0):.1f} · Popularity {popularity_txt:.0f}"
                     )
         except Exception:
             pass
@@ -447,6 +451,11 @@ def render_query_panel(movie_titles: list) -> tuple:
     # ── Chip state init ───────────────────────────────────────────
     if "selected_chips" not in st.session_state:
         st.session_state.selected_chips = set()
+    if "query_event" not in st.session_state:
+        st.session_state.query_event = "idle"
+
+    def _mark_query_event(event: str) -> None:
+        st.session_state.query_event = event
 
     st.markdown('<div class="cm-label">Tell us what you want to watch</div>', unsafe_allow_html=True)
     st.markdown(
@@ -469,9 +478,10 @@ def render_query_panel(movie_titles: list) -> tuple:
         index=0,
         key="movie_selectbox",
         label_visibility="collapsed",
+        on_change=lambda: _mark_query_event("movie"),
     )
     if selected_movie_val:
-        st.success(f"Searching for movies similar to **{selected_movie_val}**")
+        st.caption(f"Selected movie: **{selected_movie_val}**")
 
     # ── 2) Free Text (Optional) ─────────────────────────────────
     st.markdown("**2) Describe the Vibe (Optional)**")
@@ -484,6 +494,7 @@ def render_query_panel(movie_titles: list) -> tuple:
         max_chars=350,
         key="free_text_input",
         label_visibility="collapsed",
+        on_change=lambda: _mark_query_event("vibe"),
     )
     if free_text_val:
         char_c = len(free_text_val)
@@ -512,6 +523,7 @@ def render_query_panel(movie_titles: list) -> tuple:
                     st.session_state.selected_chips.discard(chip)
                 else:
                     st.session_state.selected_chips.add(chip)
+                _mark_query_event("chips")
                 st.rerun()
 
     st.markdown("**Moods**")
@@ -529,6 +541,7 @@ def render_query_panel(movie_titles: list) -> tuple:
                     st.session_state.selected_chips.discard(chip)
                 else:
                     st.session_state.selected_chips.add(chip)
+                _mark_query_event("chips")
                 st.rerun()
 
     if st.session_state.selected_chips:
@@ -557,7 +570,6 @@ def render_query_panel(movie_titles: list) -> tuple:
     sm   = st.session_state.get("movie_selectbox", "") or ""
     ft   = st.session_state.get("free_text_input",  "") or ""
     chps = st.session_state.selected_chips
-    has_input = bool(sm or ft or chps)
 
     with col_btn:
         st.markdown("<div style='padding-top:22px'>", unsafe_allow_html=True)
@@ -565,7 +577,6 @@ def render_query_panel(movie_titles: list) -> tuple:
             "Find My Movies",
             type="primary",
             use_container_width=True,
-            disabled=not has_input,
             key="submit_btn",
         )
         st.markdown("</div>", unsafe_allow_html=True)
@@ -577,6 +588,7 @@ def render_query_panel(movie_titles: list) -> tuple:
             st.session_state.pop("movie_selectbox", None)
             st.session_state.pop("free_text_input",  None)
             st.session_state.last_results = None
+            st.session_state.query_event = "clear"
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -657,9 +669,9 @@ def get_poster_url(poster_path: str, size: str = "w300") -> str:
 
 
 def get_language_display(code: str) -> str:
-    """'hi' → '🟢 Hindi'"""
-    info = LANGUAGE_INFO.get(code, {"emoji": "🎬", "label": code.upper()})
-    return f"{info['emoji']} {info['label']}"
+    """Return the display label for a language code."""
+    info = LANGUAGE_INFO.get(code, {"label": code.upper()})
+    return info["label"]
 
 
 def _score_bar_html(weighted_score: float) -> str:
@@ -698,10 +710,10 @@ def render_movie_card(
         col_rank, col_save = st.columns([9, 1])
         with col_rank:
             rank_css = {1: "rank-1", 2: "rank-2", 3: "rank-3"}.get(rank, "rank-n")
-            rank_txt = {1: "🥇 #1  BEST MATCH", 2: "🥈 #2", 3: "🥉 #3"}.get(rank, f"#{rank}")
+            rank_txt = {1: "#1  BEST MATCH", 2: "#2", 3: "#3"}.get(rank, f"#{rank}")
             st.markdown(f'<span class="{rank_css}">{rank_txt}</span>', unsafe_allow_html=True)
         with col_save:
-            heart = "❤️" if is_favourite else "🤍"
+            heart = "Saved" if is_favourite else "Save"
             tip   = "Remove from favourites" if is_favourite else "Save to favourites"
             if st.button(heart, key=f"save_{movie.movie_id}_{rank}", help=tip):
                 save_clicked = True
@@ -726,12 +738,12 @@ def render_movie_card(
                 st.caption(movie.original_title)
 
             # Language + Year + Runtime chips
-            lang_info = LANGUAGE_INFO.get(movie.language, {"badge_css": "lang-hi", "label": "Hindi", "emoji": "🎬"})
+            lang_info = LANGUAGE_INFO.get(movie.language, {"badge_css": "lang-hi", "label": "Hindi"})
             lang_css  = lang_info["badge_css"]
             st.markdown(
-                f'<span class="chip {lang_css}">{lang_info["emoji"]} {lang_info["label"]}</span>'
-                f'<span class="chip chip-year">📅 {movie.year}</span>'
-                f'<span class="chip chip-runtime">⏱ {format_runtime(movie.runtime)}</span>',
+                f'<span class="chip {lang_css}">{lang_info["label"]}</span>'
+                f'<span class="chip chip-year">Year {movie.year}</span>'
+                f'<span class="chip chip-runtime">Runtime {format_runtime(movie.runtime)}</span>',
                 unsafe_allow_html=True,
             )
 
@@ -756,13 +768,13 @@ def render_movie_card(
             if movie.director and movie.director != "Unknown":
                 st.markdown(
                     f'<p style="margin:6px 0 2px;font-size:0.82em;color:#888">'
-                    f'🎥 <strong style="color:#aaa">{movie.director}</strong></p>',
+                    f'Director: <strong style="color:#aaa">{movie.director}</strong></p>',
                     unsafe_allow_html=True,
                 )
             if movie.cast:
                 cast_str = ", ".join(movie.cast[:3])
                 st.markdown(
-                    f'<p style="margin:0;font-size:0.80em;color:#666">👤 {cast_str}</p>',
+                    f'<p style="margin:0;font-size:0.80em;color:#666">Cast: {cast_str}</p>',
                     unsafe_allow_html=True,
                 )
 
@@ -773,7 +785,7 @@ def render_movie_card(
         # ── Why you'll love this ──────────────────────────────────
         if show_justification and movie.justification:
             st.markdown(
-                f'<div class="just-box">🤖 &nbsp;{movie.justification}</div>',
+                f'<div class="just-box">Why it matches: &nbsp;{strip_emoji(movie.justification)}</div>',
                 unsafe_allow_html=True,
             )
 
@@ -781,21 +793,21 @@ def render_movie_card(
         with st.expander("▼ More Details"):
             if movie.tagline:
                 st.markdown(
-                    f'<p style="color:#888;font-style:italic;margin-bottom:10px">🎭 &ldquo;{movie.tagline}&rdquo;</p>',
+                    f'<p style="color:#888;font-style:italic;margin-bottom:10px">Tagline: &ldquo;{movie.tagline}&rdquo;</p>',
                     unsafe_allow_html=True,
                 )
-            st.markdown(f"**📖 Overview**\n\n{movie.overview}")
+            st.markdown(f"**Overview**\n\n{movie.overview}")
 
             if movie.budget or movie.revenue:
                 c1, c2 = st.columns(2)
                 with c1:
                     if movie.budget > 0:
                         label = f"${movie.budget/1e6:.0f}M" if movie.budget > 1e8 else f"₹{movie.budget/1e7:.1f}Cr"
-                        st.metric("💰 Budget", label)
+                        st.metric("Budget", label)
                 with c2:
                     if movie.revenue > 0:
                         label = f"${movie.revenue/1e6:.0f}M" if movie.revenue > 1e8 else f"₹{movie.revenue/1e7:.1f}Cr"
-                        st.metric("💵 Revenue", label)
+                        st.metric("Revenue", label)
 
     return save_clicked
 
@@ -820,7 +832,7 @@ def render_sidebar_filters() -> dict:
     elif "South Indian" in lang_choice:
         language_codes = ["ta", "te", "ml", "kn"]
     else:
-        lang_map = {"Hindi 🟢": "hi", "Tamil 🔴": "ta", "Telugu 🟠": "te", "Malayalam 🔵": "ml", "Kannada 🟣": "kn"}
+        lang_map = {"Hindi": "hi", "Tamil": "ta", "Telugu": "te", "Malayalam": "ml", "Kannada": "kn"}
         selected = st.multiselect(
             "Choose languages",
             options=list(lang_map.keys()),
@@ -831,35 +843,17 @@ def render_sidebar_filters() -> dict:
         language_codes = [lang_map[l] for l in selected] or ["hi", "ta", "te", "ml", "kn"]
 
     st.markdown("---")
-    st.markdown('<div class="cm-label">Old Movies</div>', unsafe_allow_html=True)
+    st.markdown('<div class="cm-label">Classic Movies</div>', unsafe_allow_html=True)
     include_old_movies = st.toggle(
-        "Include old movies (1990s / classic)",
+        "Include classic movies (1990s / earlier)",
         value=False,
         key="include_old_movies",
-        help="Off: use recent years by default. On: include older decades.",
+        help="Off: recent releases only. On: include 1990s and classic films.",
     )
 
     st.markdown("---")
-    st.markdown('<div class="cm-label">📅 Decade</div>', unsafe_allow_html=True)
     all_decades = ["2020s", "2010s", "2000s", "1990s", "Classic (<1990)"]
-    default_decades = all_decades if include_old_movies else ["2020s", "2010s"]
-    decade_filter = st.multiselect(
-        "Decade",
-        options=all_decades,
-        default=default_decades,
-        key="decade_filter",
-        label_visibility="collapsed",
-    )
-
-    st.markdown("---")
-    st.markdown('<div class="cm-label">⭐ Minimum Rating</div>', unsafe_allow_html=True)
-    min_rating = st.slider(
-        "Min Rating",
-        min_value=0.0, max_value=9.0, value=5.0, step=0.5,
-        format="★ %.1f",
-        key="min_rating",
-        label_visibility="collapsed",
-    )
+    decade_filter = all_decades if include_old_movies else ["2020s", "2010s"]
 
     st.markdown("---")
     st.markdown('<div class="cm-label">Diversity</div>', unsafe_allow_html=True)
@@ -872,10 +866,47 @@ def render_sidebar_filters() -> dict:
 
     return {
         "language_codes": language_codes,
-        "decade_filter":  decade_filter if decade_filter else all_decades,
-        "include_old_movies": include_old_movies,
-        "min_rating":     min_rating,
+        "decade_filter":  decade_filter,
         "diversify":      diversify,
+    }
+
+
+# ── Sidebar AI Settings ─────────────────────────────────────────────────────
+
+def render_settings_sidebar(default_api_key: str = "") -> dict:
+    """Render the Gemini / display settings section in the sidebar."""
+    st.markdown("---")
+    st.markdown('<div class="cm-label">AI JUSTIFICATION</div>', unsafe_allow_html=True)
+
+    if "gemini_api_key" not in st.session_state:
+        st.session_state.gemini_api_key = default_api_key
+
+    with st.expander("Gemini settings", expanded=False):
+        st.caption(
+            "Gemini writes the short Why it matches line below each card. "
+            "Leave the key blank to fall back to the built-in template."
+        )
+        api_key = st.text_input(
+            "Gemini API Key",
+            type="password",
+            key="gemini_api_key",
+            placeholder="Paste Gemini API key",
+        )
+        show_justifications = st.toggle(
+            "Show LLM justifications",
+            value=True,
+            key="show_justifications",
+        )
+        show_score_bar = st.toggle(
+            "Show match score bar",
+            value=True,
+            key="show_score_bar",
+        )
+
+    return {
+        "api_key": api_key.strip(),
+        "show_justifications": show_justifications,
+        "show_score_bar": show_score_bar,
     }
 
 
@@ -883,29 +914,29 @@ def render_sidebar_filters() -> dict:
 
 def render_favourites_sidebar(favourites: list) -> str | None:
     """
-    Render the ❤️ My Favourites section.
+    Render the My Favourites section.
     Returns the movie_id to remove (or '__CLEAR_ALL__'), or None.
     """
     st.markdown("---")
     count = len(favourites)
     st.markdown(
-        f'<div class="cm-label">❤️ MY FAVOURITES &nbsp;<span style="color:#F5C518">{count}</span></div>',
+        f'<div class="cm-label">MY FAVOURITES &nbsp;<span style="color:#F5C518">{count}</span></div>',
         unsafe_allow_html=True,
     )
 
     removed_id = None
 
     if not favourites:
-        st.caption("No favourites yet. Click 🤍 on any card to save.")
+        st.caption("No favourites yet. Click Save on any card to save.")
         return None
 
     # Show most recently added first (up to 5 preview items)
     for fav in reversed(favourites[-5:]):
-        lang_info = LANGUAGE_INFO.get(fav.get("language", ""), {"emoji": "🎬"})
+        lang_info = LANGUAGE_INFO.get(fav.get("language", ""), {"label": fav.get("language", "").upper()})
         col_t, col_x = st.columns([5, 1])
         with col_t:
             st.markdown(
-                f'<div class="fav-row">{lang_info["emoji"]} '
+                f'<div class="fav-row">{lang_info["label"]} '
                 f'<strong>{fav["title"]}</strong> ({fav.get("year", "")})</div>',
                 unsafe_allow_html=True,
             )
@@ -923,7 +954,7 @@ def render_favourites_sidebar(favourites: list) -> str | None:
             ra = fav.get("vote_average", 0)
             st.markdown(
                 f'<p style="font-size:0.83em;color:#aaa;margin:4px 0">'
-                f'🎬 <strong>{fav["title"]}</strong> ({fav.get("year","")}) — ★{ra:.1f}</p>',
+                f'<strong>{fav["title"]}</strong> ({fav.get("year","")}) — ★{ra:.1f}</p>',
                 unsafe_allow_html=True,
             )
 
@@ -942,27 +973,3 @@ def render_favourites_sidebar(favourites: list) -> str | None:
 
     return removed_id
 
-
-# ── Sidebar Settings ──────────────────────────────────────────────────────────
-
-def render_settings_sidebar() -> dict:
-    """Render the Settings expander in sidebar. Returns settings dict."""
-    with st.expander("⚙️ Settings"):
-        api_key = st.text_input(
-            "Anthropic API Key",
-            type="password",
-            placeholder="sk-ant-api03-...",
-            key="api_key_input",
-            help=(
-                "Optional — enables AI-generated 'Why you'll love this' justifications. "
-                "Leave blank to use the built-in rule-based fallback."
-            ),
-        )
-        show_score   = st.checkbox("Show match score bar",           value=True,  key="show_score")
-        show_just    = st.checkbox("Show 'Why you'll love this'",    value=True,  key="show_just")
-
-    return {
-        "api_key":             api_key.strip() or None,
-        "show_score_bar":      show_score,
-        "show_justifications": show_just,
-    }

@@ -27,7 +27,7 @@ CineMatch India is a Streamlit app that lets you discover your next favourite mo
 | UI | Streamlit ≥ 1.32 |
 | Embeddings | `sentence-transformers/all-MiniLM-L6-v2` |
 | Vector Store | ChromaDB (persistent local) |
-| LLM Justification | Anthropic Claude Haiku (optional) |
+| LLM Justification | Gemini API (optional) |
 | Dataset | TMDB-sourced CSV (~25,000 films) |
 | Poster Images | TMDB Image CDN |
 
@@ -58,14 +58,14 @@ The CSV must have these columns (all present in the provided dataset):
 `id, title, original_title, language, overview, genres, keywords, cast, director,
 release_date, runtime, popularity, vote_average, vote_count, budget, revenue, poster_path, tagline`
 
-### 4. (Optional) Add your Anthropic API key
+### 4. (Optional) Add your Gemini API key
 
 For AI-generated justifications, create a `.env` file:
 ```
-ANTHROPIC_API_KEY=sk-ant-api03-...
+GEMINI_API_KEY=AIzaSyC9ECyyZszSq7r9JRvOdMcakx74yimd6nk
 ```
 
-Or paste it into the **⚙️ Settings** panel inside the app.  
+Or paste it into the **AI justification** settings panel inside the app.  
 Without a key, the app still works using a rule-based fallback.
 
 ### 5. Run the app
@@ -87,7 +87,7 @@ cinmatch_india/
 ├── app.py               ← Streamlit entry point
 ├── data_pipeline.py     ← CSV loading, cleaning, ChromaDB indexing
 ├── recommend_engine.py  ← Retrieval, re-ranking, MMR, sorting
-├── llm_client.py        ← Anthropic API + rule-based fallback
+├── llm_client.py        ← Gemini API + rule-based fallback
 ├── favourites.py        ← Save/load/export favourites
 ├── ui_components.py     ← All Streamlit rendering + CSS
 ├── data/
@@ -95,7 +95,7 @@ cinmatch_india/
 ├── chroma_db/           ← Auto-created ChromaDB store
 ├── favourites.json      ← Auto-created favourites store
 ├── requirements.txt
-└── .env                 ← Optional: ANTHROPIC_API_KEY
+└── .env                 ← Optional: GEMINI_API_KEY
 ```
 
 ---
@@ -110,7 +110,7 @@ cinmatch_india/
 
 4. **Re-ranking** — A composite score combines semantic similarity (55%), vote average (25%), popularity (12%), and vote confidence (8%).
 
-5. **Justification** — Claude Haiku generates one personalised sentence per result explaining why it matches the user's query. Falls back to a rule-based template if no API key is set.
+5. **Justification** — Gemini generates one personalised sentence per result explaining why it matches the user's query. Falls back to a rule-based template if no API key is set.
 
 ---
 
@@ -125,7 +125,7 @@ cinmatch_india/
 | Save to favourites | ✅ persisted to JSON |
 | `all-MiniLM-L6-v2` embeddings | ✅ |
 | Cosine similarity retrieval | ✅ ChromaDB |
-| LLM justification generation | ✅ Anthropic Claude Haiku |
+| LLM justification generation | ✅ Gemini API |
 | No model training | ✅ inference only |
 | TMDB dataset filtering | ✅ hi/ta/te/ml/kn |
 | Poster images | ✅ TMDB CDN |

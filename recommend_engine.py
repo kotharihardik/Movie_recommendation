@@ -127,6 +127,86 @@ _GENRE_TONE_MAP: dict[frozenset, str] = {
     frozenset(["Thriller"]):                           "A psychological thriller",
 }
 
+_GENRE_INTENT_MAP: dict[str, str] = {
+    "Action": "An action-packed, high-energy film with stunts, chases, fights, and big set pieces.",
+    "Romance": "A romantic love story with soulful music, songs, singers, musicians, melodic moments, emotional chemistry, heartfelt relationships, longing, heartbreak, and falling in love.",
+    "Thriller": "A tense suspenseful thriller with danger, twists, mystery, tension, and gripping uncertainty.",
+    "Drama": "A character-driven emotional drama with interpersonal conflict, life struggles, and layered relationships.",
+    "Comedy": "A funny, light-hearted comedy with playful banter, situational humor, and charming characters.",
+    "Horror": "A scary horror film with fear, darkness, eerie atmosphere, and terrifying moments.",
+    "Family": "A warm family film with wholesome relationships, togetherness, and emotional bonds.",
+    "Historical": "An epic period story set in the past with history, culture, and dramatic stakes.",
+    "Crime": "A crime story with investigations, gangsters, heists, law, betrayal, and criminal conflict.",
+    "Sci-Fi": "A futuristic science fiction story with advanced technology, space travel, robots, aliens, time travel, and discovery.",
+}
+
+_MOOD_INTENT_MAP: dict[str, str] = {
+    "Revenge": "vengeful, dark, intense, and driven by retaliation",
+    "Feel-Good": "uplifting, heartwarming, positive, cheerful, charming, and hopeful",
+    "Tear-Jerker": "emotional, heartbreaking, moving, tragic, and bittersweet",
+    "Dance": "musical, energetic, celebratory, and full of songs and performances",
+    "Epic": "grand, sweeping, large-scale, and emotionally big",
+    "Road Trip": "a journey, travel, self-discovery, adventure, and changing relationships",
+    "Suspense": "mysterious, tense, twisty, and full of suspense",
+    "Inspirational": "motivating, hopeful, uplifting, and inspiring",
+}
+
+_CHIP_AFFINITY_TERMS: dict[str, set[str]] = {
+    "Action": {
+        "action", "fight", "fights", "chase", "chases", "stunt", "stunts",
+        "battle", "battles", "explosion", "explosions", "hero", "war",
+    },
+    "Romance": {
+        "love", "lovers", "lover", "romance", "romantic", "relationship", "relationships",
+        "marriage", "married", "couple", "couples", "heart", "heartbreak", "longing",
+        "yearning", "music", "musical", "song", "songs", "singer", "singers",
+        "musician", "musicians", "singing", "affair", "chemistry", "passion", "feelings",
+        "soulmate", "crush", "courtship",
+    },
+    "Thriller": {
+        "suspense", "suspenseful", "thriller", "mystery", "twist", "twists", "tension",
+        "danger", "investigation", "secret", "gripping", "chase", "detective",
+    },
+    "Drama": {
+        "emotion", "emotional", "family", "struggle", "struggles", "life", "tragedy",
+        "relationship", "relationships", "conflict", "journey", "society", "heart",
+    },
+    "Comedy": {
+        "funny", "hilarious", "humor", "humour", "comedy", "laugh", "laughs", "witty",
+        "banter", "chaos", "misunderstanding", "comic",
+    },
+    "Horror": {
+        "horror", "scary", "fear", "ghost", "ghosts", "haunted", "killer", "blood",
+        "terrifying", "supernatural", "evil", "dark",
+    },
+    "Family": {
+        "family", "children", "kids", "parents", "father", "mother", "brother", "sister",
+        "home", "wholesome", "together", "bond",
+    },
+    "Historical": {
+        "history", "historical", "period", "king", "queen", "empire", "war", "battle",
+        "royal", "mughal", "freedom", "biopic",
+    },
+    "Crime": {
+        "crime", "criminal", "gangster", "gang", "mafia", "heist", "police",
+        "investigation", "murder", "law", "detective", "corruption",
+    },
+    "Sci-Fi": {
+        "science fiction", "sci fi", "sci-fi", "future", "futuristic", "space", "spaceship",
+        "planet", "galaxy", "universe", "alien", "aliens", "robot", "robots", "android",
+        "machine", "technology", "time travel", "quantum", "experiment", "scientist",
+        "cyber", "digital", "virtual", "clone", "parallel",
+    },
+    "Revenge": {"revenge", "vengeance", "retaliation", "payback"},
+    "Feel-Good": {"uplifting", "heartwarming", "hopeful", "cheerful", "positive", "feel good", "inspiring"},
+    "Tear-Jerker": {"emotional", "heartbreaking", "sad", "tragic", "teary", "moving"},
+    "Dance": {"dance", "dancing", "song", "songs", "music", "musical", "performance", "performances"},
+    "Epic": {"epic", "grand", "sweeping", "scale", "battle", "journey"},
+    "Road Trip": {"road trip", "journey", "travel", "adventure", "trip"},
+    "Suspense": {"suspense", "tense", "twist", "mystery", "thriller"},
+    "Inspirational": {"inspiring", "motivating", "hopeful", "overcome", "perseverance", "success"},
+}
+
 _GENERIC_KW = {
     "love", "romance", "action", "drama", "comedy", "thriller",
     "family", "friendship", "fight", "hero", "villain", "movie",
@@ -340,6 +420,55 @@ def _derive_tone(genres: list) -> str:
     return f"A {genre_str} film"
 
 
+def _build_chip_intent_text(selected_chips: list) -> str:
+    """Turn selected genre/mood chips into a natural-language query intent."""
+    genres = [chip for chip in (selected_chips or []) if chip in SUPPORTED_GENRES]
+    moods = [chip for chip in (selected_chips or []) if chip not in SUPPORTED_GENRES]
+
+    parts = []
+    if genres:
+        tone = _derive_tone(genres)
+        genre_details = [
+            _GENRE_INTENT_MAP.get(genre, f"A {genre.lower()} film.")
+            for genre in genres
+        ]
+        parts.append(f"{tone}. {' '.join(genre_details)}")
+
+    if moods:
+        mood_details = [
+            _MOOD_INTENT_MAP.get(mood, mood.lower())
+            for mood in moods
+        ]
+        parts.append(f"The mood should feel {', '.join(mood_details)}.")
+
+    return " ".join(parts).strip()
+
+
+def _movie_text_blob(row: pd.Series) -> str:
+    parts = [str(row.get("title", "")), str(row.get("overview", "")), str(row.get("tagline", ""))]
+    keywords = row.get("keywords", []) or []
+    if isinstance(keywords, list) and keywords:
+        parts.append(" ".join(str(keyword) for keyword in keywords[:12]))
+    return " ".join(parts).lower()
+
+
+def _chip_affinity_terms(selected_chips: list) -> set[str]:
+    terms: set[str] = set()
+    for chip in selected_chips or []:
+        terms |= _CHIP_AFFINITY_TERMS.get(chip, set())
+    return terms
+
+
+def _chip_affinity_arr(df: pd.DataFrame, selected_chips: list) -> np.ndarray:
+    terms = _chip_affinity_terms(selected_chips)
+    if not terms:
+        return np.zeros(len(df), dtype=float)
+    return np.array([
+        sum(term in _movie_text_blob(row) for term in terms)
+        for _, row in df.iterrows()
+    ], dtype=float)
+
+
 def _make_description(row: pd.Series) -> str:
     """Build the semantic description for the embedding model.
 
@@ -477,7 +606,7 @@ def build_engine(df: pd.DataFrame) -> None:
     if _engine_ready:
         return
 
-    print("🎬 Building CineMatch recommendation engine…")
+    print("Building CineMatch recommendation engine…")
     t0 = time.time()
 
     _df = df.reset_index(drop=True).copy()
@@ -519,10 +648,10 @@ def build_engine(df: pd.DataFrame) -> None:
                 _embed_model = SentenceTransformer(model_name, device=device)
                 _embed_model_name    = model_name
                 _embed_needs_prefix  = needs_prefix
-                print(f"     ✅ Loaded: {model_name}  (prefix={'passage:' if needs_prefix else 'none'})")
+                print(f"     Loaded: {model_name}  (prefix={'passage:' if needs_prefix else 'none'})")
                 break
             except Exception as e:
-                print(f"     ⚠️  {model_name} failed: {e}")
+                print(f"     {model_name} failed: {e}")
                 _embed_model = None
 
         if _embed_model is not None:
@@ -538,10 +667,10 @@ def build_engine(df: pd.DataFrame) -> None:
             )
             print(f"     Embedding matrix: {_embed_vecs.shape}")
         else:
-            print("     ⚠️  All embedding models failed — semantic scoring disabled.")
+            print("     All embedding models failed - semantic scoring disabled.")
 
     except ImportError as e:
-        print(f"     ⚠️  sentence-transformers not available ({e}); semantic scoring disabled.")
+        print(f"     sentence-transformers not available ({e}); semantic scoring disabled.")
 
     # ── 3. SVD + KNN collaborative model ──────────────────────────────────
     print("  [3/4] Building SVD+KNN collaborative model…")
@@ -576,7 +705,7 @@ def build_engine(df: pd.DataFrame) -> None:
     )
 
     _engine_ready = True
-    print(f"✅ Engine ready in {time.time() - t0:.1f}s  |  model={_embed_model_name or 'NONE'}")
+    print(f"Engine ready in {time.time() - t0:.1f}s  |  model={_embed_model_name or 'NONE'}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -610,11 +739,24 @@ def _find_movie_idx(query: str, language: str = None, exact_only: bool = False) 
     return None
 
 
-_SCIFI_GENRE_ALIASES = {"sci fi", "science fiction"}
+_SCIFI_GENRE_ALIASES = {"Sci-Fi"}
+_GENRE_CANONICAL_ALIASES = {
+    "sci fi": "Sci-Fi",
+    "scifi": "Sci-Fi",
+    "science fiction": "Sci-Fi",
+    "history": "Historical",
+}
 
 
 def _normalise_genre_label(value) -> str:
     return re.sub(r"[^a-z0-9]+", " ", str(value or "").lower()).strip()
+
+
+def _canonical_genre_label(value) -> str:
+    token = _normalise_genre_label(value)
+    if not token:
+        return ""
+    return _GENRE_CANONICAL_ALIASES.get(token, str(value).strip())
 
 
 def _genre_tokens(genres_val) -> set[str]:
@@ -626,7 +768,7 @@ def _genre_tokens(genres_val) -> set[str]:
         return set()
     return {
         token
-        for token in (_normalise_genre_label(item) for item in raw_items)
+        for token in (_canonical_genre_label(item) for item in raw_items)
         if token
     }
 
@@ -743,9 +885,9 @@ def _ensure_reranker() -> None:
         print(f"     Trying reranker: {model_name} …")
         _reranker = CrossEncoder(model_name, device="cpu", tokenizer_args={"use_fast": False})
         _reranker_model_name = model_name
-        print(f"     ✅ Loaded reranker: {model_name}")
+        print(f"     Loaded reranker: {model_name}")
     except Exception as e:
-        print(f"     ⚠️  reranker unavailable: {e}")
+        print(f"     reranker unavailable: {e}")
         _reranker = None
         _reranker_model_name = ""
 
@@ -830,9 +972,70 @@ def _genre_overlap_arr(df: pd.DataFrame, query_genres: set) -> np.ndarray:
     if not query_genres:
         return np.zeros(len(df))
     return np.array([
-        _jaccard(query_genres, set(g) if isinstance(g, list) else set())
+        _jaccard(query_genres, _genre_tokens(g))
         for g in df["genres"]
     ])
+
+
+def _chip_exact_fallback(
+    selected_genres: set,
+    selected_chips: list,
+    language_codes: list,
+    decade_filter: list,
+    top_n: int,
+    min_vote_avg: float,
+) -> list[RecommendedMovie]:
+    """Return a simple exact-tag fallback when the semantic ranking looks weak."""
+    if _df is None or len(_df) == 0:
+        return []
+
+    pool = _df.copy()
+    pool = pool[pool["title"].apply(_is_clean_title)]
+
+    if language_codes:
+        pool = pool[pool["language"].isin(language_codes)]
+
+    pool = pool[_decade_mask(pool, decade_filter)]
+    pool = pool[pd.to_numeric(pool["vote_average"], errors="coerce").fillna(0) >= min_vote_avg]
+    pool = pool[pd.to_numeric(pool["vote_count"], errors="coerce").fillna(0) > 0]
+
+    if selected_genres:
+        pool = pool[pool["genres"].apply(lambda g: bool(_genre_tokens(g) & selected_genres))]
+
+    if len(pool) == 0:
+        return []
+
+    intent_text = _build_chip_intent_text(selected_chips)
+    if intent_text:
+        pool["intent_raw"] = _embed_scores_from_text(intent_text)
+        pool["intent_rank"] = _percentile_rank(pool["intent_raw"].to_numpy(dtype=float))
+    else:
+        pool["intent_rank"] = 0.0
+
+    affinity_raw = _chip_affinity_arr(pool, selected_chips)
+    pool["affinity_rank"] = _percentile_rank(affinity_raw)
+
+    pool["genre_hit_count"] = pool["genres"].apply(lambda g: len(_genre_tokens(g) & selected_genres) if selected_genres else 0)
+    pool["genre_purity"] = pool["genres"].apply(
+        lambda g: (len(_genre_tokens(g) & selected_genres) / max(len(_genre_tokens(g)), 1)) if selected_genres else 0.0
+    )
+
+    _attach_priors(pool, _df)
+    pool["fallback_score"] = (
+        0.34 * pool["intent_rank"] +
+        0.28 * pool["affinity_rank"] +
+        0.18 * pool["genre_purity"] +
+        0.08 * _percentile_rank(pool["genre_hit_count"].to_numpy(dtype=float)) +
+        0.06 * pool["vote_confidence"] +
+        0.04 * pool["fame_score"] +
+        0.02 * pool["rating_norm"]
+    )
+    ranked = pool.sort_values(
+        ["fallback_score", "genre_hit_count", "vote_confidence", "fame_score", "rating_norm"],
+        ascending=False,
+    ).head(top_n)
+    ranked["semantic_score"] = ranked["fallback_score"]
+    return _build_results_semantic(ranked, selected_genres, set(), set(), set())
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -893,7 +1096,7 @@ def _semantic_recommend(
     sims     = _anchor_bundle(anchor_idx)
     fran_sc  = _franchise_scores(df, str(q_row.get("title", "")))
 
-    q_genres  = set(q_row["genres"]) if isinstance(q_row.get("genres"), list) else set()
+    q_genres  = _genre_tokens(q_row.get("genres", []))
     q_kw      = _meaningful_kw(q_row.get("keywords", []))
     q_cast    = set((q_row.get("cast") or [])[:5])
     q_director = _clean_token(q_row.get("director", ""))
@@ -924,8 +1127,8 @@ def _semantic_recommend(
     _dbg_filter("SEMANTIC", "exclude same title", before, len(cand))
 
     # Structural features
-    cand["genre_overlap"]   = cand["genres"].apply(lambda g: len(q_genres & set(g)) if isinstance(g, list) else 0)
-    cand["genre_jaccard"]   = cand["genres"].apply(lambda g: _jaccard(q_genres, set(g)) if isinstance(g, list) else 0.0)
+    cand["genre_overlap"]   = cand["genres"].apply(lambda g: len(q_genres & _genre_tokens(g)) if isinstance(g, list) else 0)
+    cand["genre_jaccard"]   = cand["genres"].apply(lambda g: _jaccard(q_genres, _genre_tokens(g)) if isinstance(g, list) else 0.0)
     cand["cast_jaccard"]    = cand["cast"].apply(  lambda c: _jaccard(q_cast,   set(c[:5])) if isinstance(c, list) else 0.0)
     cand["director_match"]  = cand["director"].apply(lambda d: 1.0 if q_director and _clean_token(d) == q_director else 0.0)
 
@@ -1072,7 +1275,7 @@ def _semantic_relaxed_fill(
     relaxed["cf_raw"]          = pd.Series(sims["cf"],    index=df.index).reindex(relaxed.index).fillna(0.0)
     relaxed["anchor_sim_raw"]  = pd.Series(sims["total"], index=df.index).reindex(relaxed.index).fillna(0.0)
     relaxed["franchise_boost"] = pd.Series(fran_sc,       index=df.index).reindex(relaxed.index).fillna(0.0)
-    relaxed["genre_jaccard"]   = relaxed["genres"].apply(lambda g: _jaccard(q_genres, set(g)) if isinstance(g, list) else 0.0)
+    relaxed["genre_jaccard"]   = relaxed["genres"].apply(lambda g: _jaccard(q_genres, _genre_tokens(g)) if isinstance(g, list) else 0.0)
     relaxed["cast_jaccard"]    = relaxed["cast"].apply(  lambda c: _jaccard(q_cast,   set(c[:5])) if isinstance(c, list) else 0.0)
     relaxed["director_match"]  = relaxed["director"].apply(lambda d: 1.0 if q_director and _clean_token(d) == q_director else 0.0)
     relaxed["plot_jaccard"]    = relaxed["overview"].apply(lambda ov: _jaccard(q_plot, _plot_terms(ov)))
@@ -1107,7 +1310,7 @@ def _semantic_relaxed_fill(
 
     if q_genres and req_overlap > 0:
         relaxed = relaxed[
-            (relaxed["genres"].apply(lambda g: len(q_genres & set(g)) if isinstance(g, list) else 0) >= req_overlap) |
+            (relaxed["genres"].apply(lambda g: len(q_genres & _genre_tokens(g)) if isinstance(g, list) else 0) >= req_overlap) |
             (relaxed["cast_jaccard"] >= CAST_IMMUNITY_JACCARD)
         ]
 
@@ -1131,7 +1334,7 @@ def _build_results_semantic(top: pd.DataFrame, q_genres: set, q_kw: set, q_cast:
     results = []
 
     for rank, (idx, row) in enumerate(top.iterrows(), 1):
-        cand_genres = set(row.get("genres", []) or [])
+        cand_genres = _genre_tokens(row.get("genres", []))
         cand_kw     = _meaningful_kw(row.get("keywords", []))
         cand_cast   = set((row.get("cast", []) or [])[:5])
 
@@ -1209,9 +1412,10 @@ def _hybrid_recommend(
     anchor_idx:     Optional[int],
     query_text:     str,
     query_genres:   set,
-    language_codes: list,
-    decade_filter:  list,
-    top_n:          int,
+    selected_chips: Optional[list] = None,
+    language_codes: Optional[list] = None,
+    decade_filter:  Optional[list] = None,
+    top_n:          int = 10,
     min_vote_avg:   float = 5.0,
     genre_only_mode:bool  = False,
     diversify:      bool  = False,
@@ -1219,6 +1423,10 @@ def _hybrid_recommend(
 
     df = _df
     n  = len(df)
+    selected_chips = selected_chips or []
+    language_codes = language_codes or []
+    if decade_filter is None:
+        decade_filter = ["2020s", "2010s", "2000s", "1990s", "Classic (<1990)"]
 
     _dbg_header("HYBRID", "Hybrid recommendation pipeline")
 
@@ -1267,9 +1475,16 @@ def _hybrid_recommend(
 
     # Genre overlap bonus
     effective_genres = query_genres | q_genres_a
+    genre_signal = np.zeros(n, dtype=float)
     if effective_genres:
         genre_bonus = _genre_overlap_arr(df, effective_genres)
+        genre_signal = _percentile_rank(genre_bonus)
         total_sim   = 0.82 * total_sim + 0.18 * genre_bonus
+
+    chip_affinity_rank = np.zeros(n, dtype=float)
+    if selected_chips:
+        chip_affinity_raw = _chip_affinity_arr(df, selected_chips)
+        chip_affinity_rank = _percentile_rank(chip_affinity_raw)
 
     # Genre chip re-ranking: if user explicitly selected genre chips with an anchor,
     # boost films that are predominantly that genre (not just genre-overlap)
@@ -1277,12 +1492,13 @@ def _hybrid_recommend(
     if anchor_idx is not None and query_genres:
         chip_weights = np.array([
             1.0 + 0.4 * (
-                len(query_genres & (set(g) if isinstance(g, list) else set())) /
-                max(len(set(g)) if isinstance(g, list) else 1, 1)
+                len(query_genres & _genre_tokens(g)) /
+                max(len(_genre_tokens(g)), 1)
             )
             for g in df["genres"]
-        ])
-        chip_genre_bias = chip_weights / chip_weights.max()
+        ], dtype=float)
+        chip_max = float(chip_weights.max()) if chip_weights.size else 1.0
+        chip_genre_bias = chip_weights / max(chip_max, 1e-9)
 
     sim_norm  = _percentile_rank(total_sim)
     rating_norm = (
@@ -1291,11 +1507,15 @@ def _hybrid_recommend(
     )
 
     if genre_only_mode:
-        final = 0.55 * vc_all + 0.30 * fame_all + 0.15 * rating_norm
-        print("[DEBUG][HYBRID] genre_only mix: vc*0.55 + fame*0.30 + rating*0.15")
+        if query_genres == {"Romance"}:
+            final = 0.62 * sim_norm + 0.18 * chip_affinity_rank + 0.10 * genre_signal + 0.06 * rating_norm + 0.02 * vc_all + 0.02 * fame_all
+            print("[DEBUG][HYBRID] genre_only mix: romance_focus sim_norm*0.62 + chip_affinity*0.18 + genre_signal*0.10 + rating*0.06 + vc*0.02 + fame*0.02")
+        else:
+            final = 0.56 * sim_norm + 0.18 * chip_affinity_rank + 0.14 * genre_signal + 0.06 * vc_all + 0.03 * fame_all + 0.03 * rating_norm
+            print("[DEBUG][HYBRID] genre_only mix: sim_norm*0.56 + chip_affinity*0.18 + genre_signal*0.14 + vc*0.06 + fame*0.03 + rating*0.03")
     else:
-        final = (0.70 * sim_norm + 0.17 * vc_all + 0.10 * fame_all + 0.03 * rating_norm) * chip_genre_bias
-        print("[DEBUG][HYBRID] mix: sim_norm*0.70 + vc*0.17 + fame*0.10 + rating*0.03  (chip_bias applied)")
+        final = (0.56 * sim_norm + 0.14 * chip_affinity_rank + 0.12 * genre_signal + 0.10 * vc_all + 0.05 * fame_all + 0.03 * rating_norm) * chip_genre_bias
+        print("[DEBUG][HYBRID] mix: sim_norm*0.56 + chip_affinity*0.14 + genre_signal*0.12 + vc*0.10 + fame*0.05 + rating*0.03  (chip_bias applied)")
 
     def _pos(arr): return int(np.count_nonzero(arr > 0))
 
@@ -1322,7 +1542,7 @@ def _hybrid_recommend(
 
     # Genre-only: enforce at least one genre hit
     if genre_only_mode and query_genres:
-        tag_ov = np.array([len(query_genres & (set(g) if isinstance(g, list) else set())) for g in df["genres"]])
+        tag_ov = np.array([len(query_genres & _genre_tokens(g)) for g in df["genres"]])
         before = _pos(final); final *= (tag_ov >= 1); _dbg_filter("HYBRID", "genre tag", before, _pos(final))
 
     # Vote quality floor
@@ -1349,13 +1569,18 @@ def _hybrid_recommend(
 
     # Genre hard filter for anchor queries
     if anchor_idx is not None and q_genres_a:
-        g_ov_anch = np.array([len(q_genres_a & (set(g) if isinstance(g, list) else set())) for g in df["genres"]])
-        gate = (g_ov_anch > 2) | (franchise_boost >= 0.75)
-        before = _pos(final); final *= gate; final += 0.12 * franchise_boost
-        _dbg_filter("HYBRID", "anchor genre/franchise", before, _pos(final))
+        g_ov_anch = np.array([len(q_genres_a & _genre_tokens(g)) for g in df["genres"]])
+        if query_text.strip() or query_genres:
+            gate = (g_ov_anch >= 1) | (franchise_boost >= 0.75)
+            before = _pos(final); final *= gate; final += 0.10 * franchise_boost
+            _dbg_filter("HYBRID", "anchor genre/franchise", before, _pos(final), "relaxed for mixed query")
+        else:
+            gate = (g_ov_anch > 2) | (franchise_boost >= 0.75)
+            before = _pos(final); final *= gate; final += 0.12 * franchise_boost
+            _dbg_filter("HYBRID", "anchor genre/franchise", before, _pos(final))
 
     if effective_genres and anchor_idx is not None:
-        g_ov_eff = np.array([len(effective_genres & (set(g) if isinstance(g, list) else set())) for g in df["genres"]])
+        g_ov_eff = np.array([len(effective_genres & _genre_tokens(g)) for g in df["genres"]])
         genre_ok = final * (g_ov_eff >= 1)
         if int(genre_ok.astype(bool).sum()) >= top_n * 2:
             _dbg_filter("HYBRID", "effective genre gate", _pos(final), int(genre_ok.astype(bool).sum()))
@@ -1376,7 +1601,7 @@ def _hybrid_recommend(
         score = float(final[idx])
         fm    = float(fame_all[idx])
 
-        cand_genres = set(row.get("genres",[]) or [])
+        cand_genres = _genre_tokens(row.get("genres", []))
         cand_kw     = _meaningful_kw(row.get("keywords",[]))
         cand_cast   = set((row.get("cast",[]) or [])[:5])
 
@@ -1443,14 +1668,16 @@ def _mmr(candidates: np.ndarray, scores: np.ndarray, top_n: int, lambda_: float 
 
 def _build_query_text(free_text: str, selected_chips: list) -> str:
     """
-    Build SBERT query from free text + mood chips.
-    Genre chips are deliberately excluded — they act as structural filters,
-    not semantic text, to prevent genre words from polluting the embedding.
+    Build SBERT query from free text + chip intent.
+    Genre chips are converted to descriptive intent phrases so they can
+    steer semantic ranking without relying on raw tag names.
     """
     parts = []
-    moods = [c for c in (selected_chips or []) if c not in SUPPORTED_GENRES]
-    if moods:
-        parts.append(f"The mood is {', '.join(moods).lower()}.")
+
+    chip_intent = _build_chip_intent_text(selected_chips or [])
+    if chip_intent:
+        parts.append(chip_intent)
+
     if free_text:
         parts.append(free_text.strip())
     return " ".join(parts).strip()
@@ -1500,15 +1727,16 @@ def get_recommendations(
     query_text = _build_query_text(free_text or "", selected_chips or [])
 
     # Genre chips → structural filter set only
-    query_genres = {c for c in (selected_chips or []) if c in SUPPORTED_GENRES}
+    selected_chip_terms = _genre_tokens(selected_chips or [])
+    query_genres = selected_chip_terms & SUPPORTED_GENRES
 
     min_vote_avg = max(5.0, float(min_rating))
 
     genre_only_mode = bool(
         anchor_idx is None and
         not (free_text or "").strip() and
-        bool(selected_chips) and
-        all(c in SUPPORTED_GENRES for c in (selected_chips or []))
+        bool(selected_chip_terms) and
+        selected_chip_terms.issubset(SUPPORTED_GENRES)
     )
 
     effective_decade_filter = list(decade_filter or [])
@@ -1557,7 +1785,7 @@ def get_recommendations(
             print("[DEBUG][REQUEST] semantic empty → hybrid fallback")
             results = _hybrid_recommend(
                 anchor_idx=anchor_idx, query_text=query_text,
-                query_genres=query_genres, language_codes=language_codes,
+                query_genres=query_genres, selected_chips=selected_chips or [], language_codes=language_codes,
                 decade_filter=effective_decade_filter, top_n=top_n,
                 min_vote_avg=min_vote_avg, genre_only_mode=False, diversify=diversify,
             )
@@ -1575,17 +1803,35 @@ def get_recommendations(
             print("[DEBUG][REQUEST] Sci-Fi fallback empty → hybrid fallback")
             results = _hybrid_recommend(
                 anchor_idx=anchor_idx, query_text=query_text,
-                query_genres=query_genres, language_codes=language_codes,
+                query_genres=query_genres, selected_chips=selected_chips or [], language_codes=language_codes,
                 decade_filter=effective_decade_filter, top_n=top_n,
                 min_vote_avg=min_vote_avg, genre_only_mode=genre_only_mode, diversify=diversify,
             )
     else:
         results = _hybrid_recommend(
             anchor_idx=anchor_idx, query_text=query_text,
-            query_genres=query_genres, language_codes=language_codes,
+            query_genres=query_genres, selected_chips=selected_chips or [], language_codes=language_codes,
             decade_filter=effective_decade_filter, top_n=top_n,
             min_vote_avg=min_vote_avg, genre_only_mode=genre_only_mode, diversify=diversify,
         )
+
+    chip_only_mode = bool(anchor_idx is None and not (free_text or "").strip() and (selected_chips or []))
+    if chip_only_mode and query_genres:
+        top_score = float(results[0].weighted_score) if results else 0.0
+        top_genre_hit = bool(results and (_genre_tokens(results[0].genres) & query_genres))
+        if (not results) or (not top_genre_hit) or (top_score < 0.58):
+            fallback_results = _chip_exact_fallback(
+                selected_genres=query_genres,
+                selected_chips=selected_chips or [],
+                language_codes=language_codes,
+                decade_filter=effective_decade_filter,
+                top_n=top_n,
+                min_vote_avg=min_vote_avg,
+            )
+            if fallback_results:
+                results = fallback_results
+                fallback_note = f'Exact-tag fallback for {" / ".join(sorted(query_genres))}'
+                print(f"[DEBUG][REQUEST] chip fallback produced {len(results)} recommendations")
 
     print(f"[DEBUG][REQUEST] → {len(results)} recommendations")
 

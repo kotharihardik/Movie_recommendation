@@ -194,7 +194,7 @@ def upsert_movies_to_chromadb(
     """
     total = len(df)
 
-    for start in tqdm(range(0, total, batch_size), desc="📥 Indexing movies"):
+    for start in tqdm(range(0, total, batch_size), desc="Indexing movies"):
         end = min(start + batch_size, total)
         batch_df   = df.iloc[start:end]
         batch_docs = rich_texts[start:end]
@@ -255,8 +255,8 @@ def run_full_pipeline(
         print(f"Building index for {len(df):,} movies — this only happens once...")
         rich_texts = build_all_rich_texts(df)
         upsert_movies_to_chromadb(collection, df, rich_texts)
-        print(f"✅ Index built: {collection.count():,} movies.")
+        print(f"Index built: {collection.count():,} movies.")
     else:
-        print(f"✅ Index already populated: {collection.count():,} movies. Skipping re-indexing.")
+        print(f"Index already populated: {collection.count():,} movies. Skipping re-indexing.")
 
     return collection, df

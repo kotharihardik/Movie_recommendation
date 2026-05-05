@@ -31,14 +31,15 @@ from ui_components     import (
     render_results_header,
     render_movie_card,
     render_sidebar_filters,
-    render_favourites_sidebar,
     render_settings_sidebar,
+    render_favourites_sidebar,
 )
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
 DATA_PATH = os.environ.get("MOVIES_CSV",    "data/movies.csv")
 DB_PATH   = os.environ.get("CHROMA_DB_PATH","./chroma_db")
+DEFAULT_GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or "AIzaSyC9ECyyZszSq7r9JRvOdMcakx74yimd6nk"
 
 
 # ── Cached startup ────────────────────────────────────────────────────────────
@@ -64,6 +65,9 @@ def init_session_state() -> None:
         "selected_chips":       set(),
         "last_results":         None,        # List[RecommendedMovie] | None
         "last_query_bundle":    "",
+        "last_query_state":     None,
+        "last_filter_state":    None,
+        "query_event":          "idle",
         "justification_cache":  {},
     }
     for key, val in defaults.items():
@@ -75,14 +79,45 @@ def init_session_state() -> None:
         st.session_state.favourites = load_favourites()
 
 
+def run_search(collection, df, filters, selected_movie, free_text, selected_chips, top_n, api_key, show_justifications):
+    """Execute retrieval + justification for the current query and filters."""
+    with st.spinner("Scanning 25,000+ films…"):
+        results, query_bundle = get_recommendations(
+            collection     = collection,
+            movie_title    = selected_movie,
+            free_text      = free_text,
+            selected_chips = selected_chips,
+            language_codes = filters["language_codes"],
+            top_n          = top_n,
+            min_rating     = 5.0,
+            decade_filter  = filters["decade_filter"],
+            diversify      = filters["diversify"],
+            df             = df,
+        )
+
+    if not results:
+        return None, query_bundle
+
+    if show_justifications:
+        with st.spinner("Generating Gemini justifications…"):
+            results, st.session_state.justification_cache = batch_justify(
+                movies              = results,
+                query_bundle        = query_bundle,
+                api_key             = api_key,
+                justification_cache = st.session_state.justification_cache,
+            )
+
+    return results, query_bundle
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
 
     # ── Page config (must be first Streamlit call) ────────────────
     st.set_page_config(
-        page_title="CineMatch India 🎬",
-        page_icon="🎬",
+        page_title="CineMatch India",
+        page_icon="CM",
         layout="wide",
         initial_sidebar_state="expanded",
     )
@@ -91,7 +126,7 @@ def main() -> None:
     init_session_state()
 
     # ── Load data (cached) ────────────────────────────────────────
-    with st.spinner("🎬 Starting CineMatch India… (first run builds the index — ~5 min)"):
+    with st.spinner("Starting CineMatch India… (first run builds the index — ~5 min)"):
         try:
             collection, df = startup()
         except FileNotFoundError as e:
@@ -108,12 +143,12 @@ def main() -> None:
 
     # ── Sidebar ───────────────────────────────────────────────────
     with st.sidebar:
-        st.markdown('<p class="sidebar-title">🎬 CineMatch</p>', unsafe_allow_html=True)
+        st.markdown('<p class="sidebar-title">CineMatch</p>', unsafe_allow_html=True)
         st.caption(f"{collection.count():,} movies indexed")
         st.markdown("---")
 
         filters  = render_sidebar_filters()
-        settings = render_settings_sidebar()
+        settings = render_settings_sidebar(default_api_key=DEFAULT_GEMINI_API_KEY)
         removed_id = render_favourites_sidebar(st.session_state.favourites)
 
         # Handle removal / clear-all
@@ -135,58 +170,102 @@ def main() -> None:
         movie_titles
     )
 
+    current_query_state = (
+        selected_movie or "",
+        (free_text or "").strip(),
+        tuple(sorted(selected_chips or [])),
+        int(top_n),
+    )
+    current_filter_state = (
+        tuple(filters["language_codes"]),
+        tuple(filters["decade_filter"]),
+        bool(filters["diversify"]),
+    )
+    query_event = st.session_state.get("query_event", "idle")
+    has_core_input = bool(selected_movie or (free_text or "").strip() or selected_chips)
+    auto_search = bool(query_event in {"movie", "chips"} and has_core_input)
+    search_executed = False
+
+    if (
+        st.session_state.last_results is not None
+        and not submitted
+        and st.session_state.last_query_state == current_query_state
+        and st.session_state.last_filter_state is not None
+        and st.session_state.last_filter_state != current_filter_state
+        and any(current_query_state[:3])
+    ):
+        refreshed_results, refreshed_bundle = run_search(
+            collection=collection,
+            df=df,
+            filters=filters,
+            selected_movie=selected_movie,
+            free_text=free_text,
+            selected_chips=selected_chips,
+            top_n=top_n,
+            api_key=settings["api_key"],
+            show_justifications=settings["show_justifications"],
+        )
+        if refreshed_results:
+            st.session_state.last_results = refreshed_results
+            st.session_state.last_query_bundle = refreshed_bundle
+            st.session_state.last_query_state = current_query_state
+            st.session_state.last_filter_state = current_filter_state
+        else:
+            st.session_state.last_results = None
+            st.session_state.last_query_bundle = refreshed_bundle or ""
+            st.session_state.last_query_state = current_query_state
+            st.session_state.last_filter_state = current_filter_state
+            st.session_state.query_event = "idle"
+            search_executed = True
+
     # ── Handle submission ─────────────────────────────────────────
-    if submitted:
-        if not any([selected_movie, free_text, selected_chips]):
+    if (submitted or auto_search) and not search_executed:
+        if not has_core_input:
             st.warning(
-                "⚠️ Please enter a movie name, describe what you want, "
+                "Please enter a movie name, describe what you want, "
                 "or select at least one genre/mood chip."
             )
         else:
-            # ── Retrieval ─────────────────────────────────────────
-            with st.spinner("🎬 Scanning 25,000+ films…"):
-                results, query_bundle = get_recommendations(
-                    collection     = collection,
-                    movie_title    = selected_movie,
-                    free_text      = free_text,
-                    selected_chips = selected_chips,
-                    language_codes = filters["language_codes"],
-                    top_n          = top_n,
-                    min_rating     = filters["min_rating"],
-                    decade_filter  = filters["decade_filter"],
-                    include_old_movies = filters.get("include_old_movies", False),
-                    diversify      = filters["diversify"],
-                    df             = df,
-                )
+            results, query_bundle = run_search(
+                collection=collection,
+                df=df,
+                filters=filters,
+                selected_movie=selected_movie,
+                free_text=free_text,
+                selected_chips=selected_chips,
+                top_n=top_n,
+                api_key=settings["api_key"],
+                show_justifications=settings["show_justifications"],
+            )
 
             if not results:
                 st.warning(
                     "No movies found for your current filters. "
-                    "Try lowering the minimum rating or broadening the language/decade selection."
+                    "Try broadening the language filter or turning on classic movies."
                 )
                 st.stop()
-
-            # ── Justifications ────────────────────────────────────
-            if settings["show_justifications"]:
-                api_key = (
-                    settings.get("api_key")
-                    or os.environ.get("ANTHROPIC_API_KEY")
-                )
-                with st.spinner("🤖 Writing personalised recommendations…"):
-                    results, st.session_state.justification_cache = batch_justify(
-                        movies              = results,
-                        query_bundle        = query_bundle,
-                        api_key             = api_key,
-                        justification_cache = st.session_state.justification_cache,
-                    )
 
             # ── Cache results ─────────────────────────────────────
             st.session_state.last_results      = results
             st.session_state.last_query_bundle = query_bundle
+            st.session_state.last_query_state   = current_query_state
+            st.session_state.last_filter_state  = current_filter_state
+            st.session_state.query_event       = "idle"
+            search_executed = True
 
     # ── Results or Hero ───────────────────────────────────────────
     if st.session_state.last_results:
         results = st.session_state.last_results
+
+        if settings["show_justifications"] and any(not getattr(movie, "justification", "") for movie in results):
+            with st.spinner("Generating Gemini justifications…"):
+                results, st.session_state.justification_cache = batch_justify(
+                    movies              = results,
+                    query_bundle        = st.session_state.last_query_bundle,
+                    api_key             = settings["api_key"],
+                    justification_cache = st.session_state.justification_cache,
+                )
+                st.session_state.last_results = results
 
         # Sort controls
         sort_by = render_results_header(
