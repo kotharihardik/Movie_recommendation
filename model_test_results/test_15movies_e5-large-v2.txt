@@ -1,0 +1,1117 @@
+Movie Recommendation System - Model Test
+Model: intfloat/e5-large-v2
+Test Date: 2026-05-04 22:12:02
+Test Movies: 15
+Dataset Size: 12522
+============================================================
+
+
+============================================================
+TEST MOVIE 1: 3 Idiots
+============================================================
+3 Idiots (2009) - Rating: 7.996/10
+Overview: Rascal. Joker. Dreamer. Genius... You've never met a college student quite like "Rancho." From the moment he arrives at India's most prestigious university, Rancho's outlandish schemes turn the campus...
+
+Genres: ['Drama', 'Comedy']
+Keywords: ['challenge', 'middle class', 'slapstick comedy', 'coming of age', 'flashback', 'teacher', 'friends', 'engineering', 'university', 'subjective camera', 'smart kid', 'poor kid', 'looking for friend', 'plot twist', 'inspirational', 'student', 'life advice', 'amused', 'delhi']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Aayitha Ezhuthu - Score: 0.8523
+   Year: 2004
+   Rating: 7.079/10
+   Overview: A goon, who dreams of making it big in life, a student leader, who strives to keep politicians away from college election and a third guy who wants to...
+   Keywords: ['politics', 'idealist', 'love', 'domestic violence', 'wife beater', 'youth leader', 'urban youth', 'hyperlink cinema']
+
+2. Aflatoon - Score: 0.8517
+   Year: 1997
+   Rating: 4.417/10
+   Overview: Mistakenly appointed as a college professor, happy-go-lucky Raja finds the rich girl of his dreams - but must confront a look-alike con man named Rock...
+   Keywords: []
+
+3. Aavesham - Score: 0.8439
+   Year: 2024
+   Rating: 7.488/10
+   Overview: Three college freshmen in Bangalore befriend an eccentric gangster to get revenge on their senior bullies....
+   Keywords: []
+
+4. College Days - Score: 0.8433
+   Year: 2010
+   Rating: 4.5/10
+   Overview: Ananthakrishnan loses his uncle, aunt and girlfriend due to the actions of five wayward medical college students. In order to seek revenge, he joins t...
+   Keywords: []
+
+5. Vasool Raja MBBS - Score: 0.8392
+   Year: 2004
+   Rating: 6.8/10
+   Overview: A goon, Rajaraman, enrols himself in a medical college to fulfil his father's dream. He defies the college rules and creates problems for Dr Vishwanat...
+   Keywords: []
+
+6. Jodi No. 1 - Score: 0.8389
+   Year: 2001
+   Rating: 5.4/10
+   Overview: Partners in crime Jai and Veeru set their next target on a rich businessman, Rai Bahadur. Things turn hilarious when both of them fall for his daughte...
+   Keywords: []
+
+7. Goa - Score: 0.8383
+   Year: 2010
+   Rating: 6.0/10
+   Overview: Three young men, who always get into trouble in their village, dream of an effortless life. For this, they run away to Goa in the hope of finding and ...
+   Keywords: ['beach', 'holiday', 'goa', 'road trip']
+
+8. Fukrey - Score: 0.8370
+   Year: 2013
+   Rating: 6.459/10
+   Overview: The paths of four dream-chasing college friends cross with an array of colourful characters, from a tough-talking Punjabi female don to a Jugaad Baaz ...
+   Keywords: []
+
+9. Uriyadi - Score: 0.8370
+   Year: 2016
+   Rating: 7.8/10
+   Overview: A group of college students gets entangled in the scheme of a fledgling caste outfit that wants to turn into a political party....
+   Keywords: ['caste system', 'political thriller', 'caste politics']
+
+10. Mithra Mandali - Score: 0.8370
+   Year: 2025
+   Rating: 4.0/10
+   Overview: The lives of a group of misfit friends become chaotic after one of them falls for a politician's daughter....
+   Keywords: ['comedy of errors']
+
+                                                            
+
+============================================================
+TEST MOVIE 2: Hera Pheri
+============================================================
+Hera Pheri (2000) - Rating: 7.054/10
+Overview: Two tenants and a landlord, in desperate need of money, chance upon a ransom call via a cross connection. They hatch a plan to claim the ransom for themselves....
+
+Genres: ['Comedy', 'Crime']
+Keywords: []
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. O Pitta Katha - Score: 0.8716
+   Year: 2020
+   Rating: 6.5/10
+   Overview: Two men fall deeply in love with the same woman but when she suddenly gets kidnapped they get involved in the case to rescue her....
+   Keywords: []
+
+2. Barah Aana - Score: 0.8692
+   Year: 2009
+   Rating: 5.75/10
+   Overview: Three impoverished roommates have the chance to change their fates when one of them stumbles upon a seemingly low-risk way to earn some extra cash....
+   Keywords: []
+
+3. Phir Hera Pheri - Score: 0.8689
+   Year: 2006
+   Rating: 6.854/10
+   Overview: Raju,  Shyam and Baburao are living happily after having risen from rags to riches. However, they lose it all after falling victim to a chit fund scam...
+   Keywords: []
+
+4. Bangarada Kalla - Score: 0.8660
+   Year: 1973
+   Rating: 6.0/10
+   Overview: A corrupt landlord secretly smuggles gold as the police get desperate to find the culprit. However, the landlord is unaware that someone close to him ...
+   Keywords: []
+
+5. Love Ke Liye Kuch Bhi Karega - Score: 0.8654
+   Year: 2001
+   Rating: 5.526/10
+   Overview: Desperate for money, three men plot to kidnap a woman and hold her for ransom....
+   Keywords: ['kidnapping', 'remake', 'ransom demand']
+
+6. Money - Score: 0.8644
+   Year: 1993
+   Rating: 8.3/10
+   Overview: Two unemployed youths kidnap their wealthy neighbor and later learn that her husband wants her dead for the property; they end up helping her out of t...
+   Keywords: []
+
+7. Superstar Kidnap - Score: 0.8629
+   Year: 2014
+   Rating: 5.0/10
+   Overview: Three youngsters meet accidentally in a drug deal plan to kidnap superstar maheshbabu to come out of their financial and personal crisis....
+   Keywords: []
+
+8. Veera - Score: 0.8608
+   Year: 2018
+   Rating: 4.0/10
+   Overview: Two friends, who aspire to take control of things in their locality, face a series of issues when they take up an assignment involving kidnapping a po...
+   Keywords: ['kidnapping']
+
+9. Darwaaza Bandh Rakho - Score: 0.8596
+   Year: 2006
+   Rating: 5.5/10
+   Overview: Four men form a gang with a plan of making a quick buck by kidnapping a rich girl for ransom. Not being prepared for unforeseen situation, they are fo...
+   Keywords: ['kidnapping']
+
+10. Do Aur Do Paanch - Score: 0.8583
+   Year: 1980
+   Rating: 6.9/10
+   Overview: Two rival burglars end up at the same school with the intent of abducting a rich man's son for a large ransom....
+   Keywords: ['uncle']
+
+                                                            
+
+============================================================
+TEST MOVIE 3: Bhool Bhulaiyaa 2
+============================================================
+Bhool Bhulaiyaa 2 (2022) - Rating: 6.157/10
+Overview: When strangers Reet and Ruhan cross paths, their journey leads to an abandoned mansion and a dreaded spirit who has been trapped for eighteen years....
+
+Genres: ['Horror', 'Comedy']
+Keywords: ['sequel']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Bhool Bhulaiyaa 3 - Score: 0.8721
+   Year: 2024
+   Rating: 5.5/10
+   Overview: Rooh Baba ventures into a haunted mansion in the kingdom of Raktaghat in West Bengal, where he confronts two vengeful spirits, both asserting to be Ma...
+   Keywords: ['haunted house', 'sequel', 'vengeful spirit', 'west bengal']
+
+2. Raaz - Score: 0.8649
+   Year: 2002
+   Rating: 5.75/10
+   Overview: A couple goes for a vacation to the scenic mountains of Ooty to save their crumbling marriage, but the bungalow they are staying at is haunted by a ve...
+   Keywords: []
+
+3. Jithan 2 - Score: 0.8645
+   Year: 2016
+   Rating: 2.3/10
+   Overview: A man buys a house only to realise that the place is haunted by a ghost that will not let him in peace....
+   Keywords: ['supernatural', 'ghost']
+
+4. Bhool Bhulaiyaa - Score: 0.8632
+   Year: 2007
+   Rating: 6.708/10
+   Overview: NRI Siddharth Chaturvedi and his wife Avni return to Siddharth's family's ancestral Varanasi palace while disregarding warnings of a curse and paranor...
+   Keywords: ['haunted house', 'paranormal phenomena', 'remake', 'eccentric', 'curse', 'nri', 'supernatural phenomena', 'ancestral home', 'non-resident indian']
+
+5. Pyaasa Haiwan - Score: 0.8629
+   Year: 2003
+   Rating: 3.8/10
+   Overview: A group of poor souls are trapped in a haunted mansion where the ghost-monster of its late masochistic/psychotic owner stalks the halls....
+   Keywords: []
+
+6. Roohi - Score: 0.8599
+   Year: 2021
+   Rating: 4.5/10
+   Overview: In a fictional North Indian town, two boys Bhaura and Kattanni are stuck in a forest with Roohi. But there’s an insidious spirit following them with f...
+   Keywords: []
+
+7. Aghathiyaa - Score: 0.8580
+   Year: 2025
+   Rating: 4.8/10
+   Overview: Things go awry when a haunted mansion is opened as a tourist attraction by Aghathiyan leading to the unraveling of the dark history behind the mansion...
+   Keywords: ['haunted house', 'entrepreneurship', 'haunted mansion', 'supernatural horror']
+
+8. Gadar 2 - Score: 0.8573
+   Year: 2023
+   Rating: 5.907/10
+   Overview: When Tara Singh goes missing during a skirmish and is believed to be captured in Pakistan, his son Jeete sets out to rescue him and enters a labyrinth...
+   Keywords: ['sequel']
+
+9. Tumko Na Bhool Paayenge - Score: 0.8564
+   Year: 2002
+   Rating: 5.8/10
+   Overview: Veer, a villager, becomes restless after he is haunted by the visions of his past. When he is attacked on the day of his wedding, he forces his parent...
+   Keywords: []
+
+10. Fear - Score: 0.8561
+   Year: 2007
+   Rating: 2.0/10
+   Overview: In director Vikram Bhatt's Bollywood spook fest, a supernatural spirit terrorizes a woman and forces her to confront the demons of her past....
+   Keywords: []
+
+                                                            
+
+============================================================
+TEST MOVIE 4: RRR
+============================================================
+RRR (2022) - Rating: 7.715/10
+Overview: A fictional history of two legendary revolutionaries' journey away from home before they began fighting for their country in the 1920s....
+
+Genres: ['Action', 'Adventure', 'Drama']
+Keywords: ['rescue', 'revolution', 'liberation', 'slavery', 'male friendship', 'freedom fighter', 'british empire', 'interracial romance', 'historical fiction', 'period drama', 'historical', '1920s', 'history of india', 'killed in action', 'war', 'amused']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Kranti - Score: 0.8750
+   Year: 1981
+   Rating: 6.2/10
+   Overview: The film takes place in 19th Century British India and is the story of the fight for independence from the British in the years spanning from 1825 to ...
+   Keywords: []
+
+2. Lal Quila - Score: 0.8722
+   Year: 1960
+   Rating: 3.0/10
+   Overview: A fictional account of the real life struggle against the British East India Company....
+   Keywords: []
+
+3. Alluri Seetarama Raju - Score: 0.8611
+   Year: 1974
+   Rating: 8.7/10
+   Overview: Cinematic version of the life of the legendary freedom fighter....
+   Keywords: []
+
+4. Gold - Score: 0.8581
+   Year: 2018
+   Rating: 7.044/10
+   Overview: Set in 1948, the historic story of India's first Olympic medal post their independence....
+   Keywords: ['sports', 'olympic games', 'biography', 'ice hockey', 'bengali']
+
+5. Rang Rasiya - Score: 0.8580
+   Year: 2014
+   Rating: 6.14/10
+   Overview: A look a the life of 19th century Indian painter Raja Ravi Varma....
+   Keywords: ['painter', 'biography', 'god', 'goddess', 'india', '19th century', 'raja ravi varma']
+
+6. Dharmputra - Score: 0.8575
+   Year: 1961
+   Rating: 3.0/10
+   Overview: The story of two families — one Muslim and one Hindu — living together in India under British rule....
+   Keywords: ['british empire', 'islamophobia', 'partition', 'child given up for adoption', 'hindu muslim conflict', 'hindutva']
+
+7. 1971: Beyond Borders - Score: 0.8570
+   Year: 2017
+   Rating: 6.0/10
+   Overview: Set against the backdrop of 1971 Indo-Pak war, the movie is inspired by real incidents and the protagonists are inspired by Param Vir Chakra recipient...
+   Keywords: ['rescue', 'friendship', 'letter', 'tank', 'relationship', 'united nations', 'family', 'gun fight', 'india pakistan war']
+
+8. Once Upon a Time in Mumbaai - Score: 0.8563
+   Year: 2010
+   Rating: 6.636/10
+   Overview: A tale of two gangsters from the eras of past and present, whose lives enter parallel paths as they struggle to survive within Bombay's criminal under...
+   Keywords: ['crime boss', 'criminal past', 'mafia', 'india', 'mumbai underworld']
+
+9. Sampoorna Ramayanam - Score: 0.8557
+   Year: 1961
+   Rating: 7.0/10
+   Overview: This is the story of Lord Ram and his years spent in exile with his wife and brother, and also chronicles the end of the demon king Ravan and his fami...
+   Keywords: []
+
+10. Iruvar - Score: 0.8557
+   Year: 1997
+   Rating: 7.402/10
+   Overview: A fictionalized account of the lives of 1980s Tamil Nadu political icons M. G. Ramachandran and M. Karunanidhi, continuing the tryst between Tamil cin...
+   Keywords: ['politics', 'based on true story', 'filmmaking', 'fictional biography', 'acting', 'actor', 'indian politics', 'love for cinema', 'dravidian politics', 'dravidian ideology']
+
+                                                            
+
+============================================================
+TEST MOVIE 5: Drishyam 2
+============================================================
+Drishyam 2 (2022) - Rating: 7.976/10
+Overview: 7 years after the case related to Vijay Salgaonkar and his family was closed, a series of unexpected events bring truth to light that threatens to change everything for the Salgaonkars. Can Vijay save...
+
+Genres: ['Thriller', 'Drama', 'Mystery']
+Keywords: ['based on movie', 'suspenseful']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Drishyam 2 - Score: 0.9234
+   Year: 2021
+   Rating: 7.567/10
+   Overview: 7 years after the events of Drishyam, the family lives with the trauma from that fateful night. A gripping tale of an investigation and a family threa...
+   Keywords: ['perfect crime', 'investigation', 'sequel']
+
+2. Drushyam 2 - Score: 0.9095
+   Year: 2021
+   Rating: 6.9/10
+   Overview: 7 years after the events of Drushyam, the family lives with the trauma from that fateful night. A gripping tale of an investigation and a family threa...
+   Keywords: []
+
+3. Shivaji Surathkal 2: Mysterious case of Maayavi - Score: 0.8616
+   Year: 2023
+   Rating: 1.0/10
+   Overview: A serial killer is on the loose and the onus is on Karnataka’s Sherlock Holmes, Shivaji Surathkal, to catch him. The case becomes complex just when Sh...
+   Keywords: []
+
+4. Varisu - Score: 0.8533
+   Year: 2023
+   Rating: 5.051/10
+   Overview: Vijay, The prodigal son of business tycoon Rajendran agrees to take over the reins of the business, much to the chagrin of his brothers. But can Vijay...
+   Keywords: []
+
+5. Nisabdham - Score: 0.8524
+   Year: 2017
+   Rating: 10.0/10
+   Overview: A happily married couple’s life turns into trauma after their eight-year-old daughter is raped. Will the family be able to put their lives back on tra...
+   Keywords: ['child abuse', 'rape']
+
+6. Rustum - Score: 0.8503
+   Year: 2019
+   Rating: 5.0/10
+   Overview: The disappearance of an honest IAS officer leads to his family seeking help from police, but to no avail. To their assistance arrives Abhishek, someon...
+   Keywords: []
+
+7. Bharathanatyam 2 Mohiniyattam - Score: 0.8501
+   Year: 2026
+   Rating: 7.0/10
+   Overview: The family's journey to Sreekandapuram to settle the late Bharathan Nair's second wife and son takes a dark turn when an issue from his past resurface...
+   Keywords: []
+
+8. Jhoota Kahin Ka - Score: 0.8487
+   Year: 1979
+   Rating: 5.5/10
+   Overview: A family of four is separated after the ship they're traveling on capsizes. The two brothers, Ajay and Vijay, grow up apart - only to reunite years la...
+   Keywords: []
+
+9. Drishyam - Score: 0.8472
+   Year: 2015
+   Rating: 7.535/10
+   Overview: A simple street-smart man tries to protect his family from a cop looking for her missing son who was accidently killed by his daughter....
+   Keywords: ['police', 'blackmail', 'hidden camera', 'remake', 'murder', 'family', 'phone', 'based on movie', 'false evidence', 'suspenseful']
+
+10. Karishma Kudrat Kaa - Score: 0.8466
+   Year: 1985
+   Rating: 4.6/10
+   Overview: Widower Vijay lives in a village with his family. He unwittingly makes an enemy in Lala and a bandit, Bhagad, who conspire and throw him out of the vi...
+   Keywords: []
+
+                                                            
+
+============================================================
+TEST MOVIE 6: Shreemaan Aashique
+============================================================
+Shreemaan Aashique (1993) - Rating: 5.0/10
+Overview: Kalidas and Suman Mehra would like their only son to be like the rest of young men, have fun, mingle, stay late nights, and have a girlfriend. But he, Dushyant Kumar, is different, he is pious, worshi...
+
+Genres: []
+Keywords: []
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Izzat - Score: 0.8560
+   Year: 1968
+   Rating: 6.0/10
+   Overview: After completing his college, dark-skinned Adivasi Shekhar returns home and finds that his mother, Savli, has passed away. Distraught, he is consoled ...
+   Keywords: ['thriller', 'drama']
+
+2. Diljalaa - Score: 0.8552
+   Year: 1987
+   Rating: 5.0/10
+   Overview: Widowed multi-millionaire Sharda lives with an only son, Munna; she is also the proprietor of a factory called, "Sharda Chemicals". Sharda arranges Mu...
+   Keywords: []
+
+3. Dil Tera Diwana - Score: 0.8524
+   Year: 1962
+   Rating: 6.0/10
+   Overview: Wayward, brash, and disobedient Mohan (Shammi Kapoor) is sent by his angry dad Diwan Badriprasad (Ulhas) to a retired army captain Dayaram (Om Prakash...
+   Keywords: []
+
+4. Sadhna - Score: 0.8520
+   Year: 1958
+   Rating: 1.0/10
+   Overview: Mohan lives a middle-class life with his ailing mother, and works as a college professor. His mother would like him to get married, but he asks her to...
+   Keywords: []
+
+5. Aadmi Khilona Hai - Score: 0.8519
+   Year: 1993
+   Rating: 10.0/10
+   Overview: The Verma family consists of two brothers, Vijay and Sharad (Jeetendra and Govinda respectively), Vijay's wife, Ganga (Reena Roy), and their daughter....
+   Keywords: []
+
+6. Jawani Zindabad - Score: 0.8518
+   Year: 1990
+   Rating: 6.0/10
+   Overview: Shashi, Akbar and a group of young people pledge never to give nor receive dowry. Acting against his mother's wishes, Shashi marries Sugandha Srivasta...
+   Keywords: []
+
+7. Sanyasi - Score: 0.8518
+   Year: 1975
+   Rating: 5.5/10
+   Overview: Renukadevi is widowed and the mother of a son named Ram. Her husband had indulged in all possible vices, and passed away unexpectedly. Her father-in-l...
+   Keywords: []
+
+8. Aulad - Score: 0.8514
+   Year: 1968
+   Rating: 5.0/10
+   Overview: Mamta lives a poor lifestyle with her husband, Dinu, and two sons, Mohan, and Sohan. When Ram Lal, the wealthy Zamindar, Kanta Prasad Gupta's Munim, c...
+   Keywords: []
+
+9. Aadat Se Majboor - Score: 0.8499
+   Year: 1982
+   Rating: 9.8/10
+   Overview: Dinanath Shastri (Madanpuri) is a devout Hindu firefighter. One day his son, Shankar (Mithun Chakraborty) brings home a young girl, Salma (Rameshwari)...
+   Keywords: []
+
+10. Jamai Raja - Score: 0.8498
+   Year: 1990
+   Rating: 6.0/10
+   Overview: The conflict between Mother-in-law and Daughter-in-law is very common in every family. But in our exemplary story, there is a conflict between Mother-...
+   Keywords: []
+
+                                                            
+
+============================================================
+TEST MOVIE 7: Happy New Year
+============================================================
+Happy New Year (2014) - Rating: 6.1/10
+Overview: Six would-be thieves enter a prestigious dance competition as a cover for their larger goal of pulling off a major heist....
+
+Genres: ['Action', 'Comedy', 'Crime', 'Adventure']
+Keywords: ['dance', 'diamond', 'competition', 'stripper', 'heist', 'dubai', 'con artist', 'thief', 'pole dancer', 'diamond heist', 'woman director']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Dilruba - Score: 0.8366
+   Year: 1950
+   Rating: 5.0/10
+   Overview: Efforts are underway by the owner of a dancer troupe to ensnare an Engineer in the theft of a necklace....
+   Keywords: []
+
+2. Kaante - Score: 0.8335
+   Year: 2002
+   Rating: 5.34/10
+   Overview: Six men meet in a lock-up, where they've been wrongfully detained. Seeking revenge, they make the perfect plan to rob the very bank where police depar...
+   Keywords: []
+
+3. Ek Se Bure Do - Score: 0.8335
+   Year: 2009
+   Rating: 4.0/10
+   Overview: Two petty thieves face-off against gangsters, bandits and police after forging a treasure map....
+   Keywords: []
+
+4. Fancy Dress - Score: 0.8322
+   Year: 2019
+   Rating: 5.0/10
+   Overview: Two con-artists scheme to pull off the biggest scam of their career, hoping that it will revive their fortunes. With some unexpected twists and new pl...
+   Keywords: []
+
+5. ABCD 2 - Score: 0.8299
+   Year: 2015
+   Rating: 5.8/10
+   Overview: Childhood friends Suresh and Vinnie want to become successful dancers. To fulfill their dreams, they form a dance group with their friends and compete...
+   Keywords: ['dancing', 'dance', 'competition', 'musical']
+
+6. Friday Night Plan - Score: 0.8269
+   Year: 2023
+   Rating: 6.0/10
+   Overview: When their mother takes off on a business trip, two bickering brothers unite to secretly attend the hottest party of the year before she returns....
+   Keywords: []
+
+7. Partners - Score: 0.8264
+   Year: 2024
+   Rating: 3.0/10
+   Overview: Bank employees discover they are working for a fake bank and try to steal a large quantity of gold from a criminal....
+   Keywords: []
+
+8. Mayabazar 2016 - Score: 0.8253
+   Year: 2020
+   Rating: 4.667/10
+   Overview: An honest cop, a conman and a hopeless romantic form an unusual team during the days of demonetisation to pull off a scam. A scam that is bigger than ...
+   Keywords: []
+
+9. Street Dancer 3D - Score: 0.8250
+   Year: 2020
+   Rating: 6.6/10
+   Overview: Two rival dance groups from India and Pakistan who are always competing against each other, join forces when it comes to competing at an international...
+   Keywords: ['dance competition']
+
+10. Players - Score: 0.8244
+   Year: 2012
+   Rating: 5.0/10
+   Overview: Two professional robbers, an illusionist, an expert make-up artist, a gadget expert and a hacker come together to steal Romanian gold ingots while it ...
+   Keywords: ['heist', 'remake', 'betrayal']
+
+                                                            
+
+============================================================
+TEST MOVIE 8: Kabir Singh
+============================================================
+Kabir Singh (2019) - Rating: 6.314/10
+Overview: Kabir, a genius yet hostile medical student, falls in love with Preeti from his college. When Preeti's father spots the couple kissing, he opposes their relationship and decides to marry her off....
+
+Genres: ['Drama', 'Romance']
+Keywords: ['self-destruction', 'delhi, india', 'surgeon', 'family relationships', 'love', 'remake', 'based on movie', 'medical student', 'anger issues', 'unconditional love', 'self hatred']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Kaadhalan - Score: 0.8673
+   Year: 1994
+   Rating: 6.6/10
+   Overview: Prabhu, a college student, falls in love with Shruthi, a governor's daughter. On knowing about their love affair, her father imprisons Prabhu and forb...
+   Keywords: ['forbidden love']
+
+2. Kal Ho Naa Ho - Score: 0.8673
+   Year: 2003
+   Rating: 7.458/10
+   Overview: An uptight MBA student falls for the charismatic new neighbor who charms her troubled family – but he has a secret that forces him to push her away....
+   Keywords: ['new york city', 'musical']
+
+3. Teree Sang: A Kidult Love Story - Score: 0.8645
+   Year: 2009
+   Rating: 7.2/10
+   Overview: A 15-year-old Maahi, who hails from an rich family, falls in love with Kabir, a 17-year-old. When she becomes pregnant, their families' opposition for...
+   Keywords: ['elopement', 'teenage pregnancy']
+
+4. Dil Apna Aur Preet Parai - Score: 0.8635
+   Year: 1960
+   Rating: 4.5/10
+   Overview: A rich girl marries a doctor. Differences crop up between the two and starts to snowball wherein she returns to her father's house. Months later she r...
+   Keywords: []
+
+5. Vaidya - Score: 0.8625
+   Year: 2021
+   Rating: 7.0/10
+   Overview: Kabir meets the mysterious Vaidya at a beach on a solo trip. The two fall for each other and Kabir leaves with a promise to come back. He decides othe...
+   Keywords: []
+
+6. Chaahat - Score: 0.8621
+   Year: 1996
+   Rating: 6.6/10
+   Overview: Roop and his father come to the city for medical treatment where Reshma falls in love with Roop. However, Roop loves Pooja but when Reshma threatens t...
+   Keywords: ['romance', 'love']
+
+7. Naan Adimai Illai - Score: 0.8617
+   Year: 1986
+   Rating: 5.8/10
+   Overview: Vijay and Priya fall in love and get married against her father's wishes. However, when they get separated after a fight, Priya's father plots to keep...
+   Keywords: []
+
+8. Aa Gale Lag Jaa - Score: 0.8613
+   Year: 1973
+   Rating: 7.2/10
+   Overview: Preeti, a wealthy woman, is in an intimate relationship with Prem, but her father disapproves and devises a plan that leads to their breakup. Years la...
+   Keywords: ['doctor', 'hypothermia']
+
+9. Subbu - Score: 0.8601
+   Year: 2001
+   Rating: 3.5/10
+   Overview: Subbu, a college student, falls in love with the affluent Neeraja. However, things take a turn when he realises that Neeraja's father was responsible ...
+   Keywords: []
+
+10. Kadhal Azhivathillai - Score: 0.8589
+   Year: 2002
+   Rating: 5.2/10
+   Overview: A young man and a woman fall in love with each other. But soon her father gets to know about their affair and goes to extremes to separate the couple....
+   Keywords: ['teenage love', 'tough love']
+
+                                                            
+
+============================================================
+TEST MOVIE 9: Bhoothnath
+============================================================
+Bhoothnath (2008) - Rating: 6.122/10
+Overview: Moving into a new house, a family witnesses an unfriendly ghost who wants to drive them away from the house. However, he befriends a little boy who changes his outlook forever....
+
+Genres: ['Family', 'Comedy']
+Keywords: ['flashback', 'ghost']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Avunu - Score: 0.8975
+   Year: 2012
+   Rating: 6.2/10
+   Overview: A newly-wed couple moves to a new house where they begin to witness some eerie activities. Things take an unexpected turn when a boy informs them that...
+   Keywords: []
+
+2. Bhoot Returns - Score: 0.8900
+   Year: 2012
+   Rating: 3.3/10
+   Overview: A family moves into a possessed bungalow. A sudden turn of events in the house leaves them astonished. When things worsen, escape seems to be their la...
+   Keywords: []
+
+3. Vaastu Shastra - Score: 0.8823
+   Year: 2004
+   Rating: 5.111/10
+   Overview: A couple and their sister move to their new house with their young son, but soon discover that an old tree outside the house holds a strange curse whi...
+   Keywords: []
+
+4. Bhoothakaalam - Score: 0.8810
+   Year: 2022
+   Rating: 6.741/10
+   Overview: Following the death of a family member, a mother and son experience mysterious events which distort their sense of reality and make them question thei...
+   Keywords: []
+
+5. Aadupuliyattam - Score: 0.8794
+   Year: 2016
+   Rating: 4.0/10
+   Overview: A man and his family move into a house haunted by the spirit of an ancient queen....
+   Keywords: ['infidelity', 'fire', 'cheating', 'palace', 'sorcerer', 'ghost', 'starving child']
+
+6. Sangili Bungili Kadhava Thorae - Score: 0.8790
+   Year: 2017
+   Rating: 4.7/10
+   Overview: A young man who wants to own a house buys a mansion and moves into it with his extended family not knowing that there is a ghost in the place....
+   Keywords: []
+
+7. Jithan 2 - Score: 0.8741
+   Year: 2016
+   Rating: 2.3/10
+   Overview: A man buys a house only to realise that the place is haunted by a ghost that will not let him in peace....
+   Keywords: ['supernatural', 'ghost']
+
+8. Bhoot Police - Score: 0.8734
+   Year: 2021
+   Rating: 5.026/10
+   Overview: Two brothers Vibhooti and Chiraunji have fought their share of ghosts. However, a new case in a remote village forces them to rethink their own abilit...
+   Keywords: []
+
+9. Deyyam - Score: 0.8734
+   Year: 1996
+   Rating: 5.1/10
+   Overview: Murali and Sindhu, bought a new farm house in the suburbs of Hyderabad. The problem comes when Sindhu's son starts making imaginary friends in their n...
+   Keywords: ['haunted house']
+
+10. Bhoothnath Returns - Score: 0.8730
+   Year: 2014
+   Rating: 6.305/10
+   Overview: Boothnath vows to redeem himself when spirits tease him, and searches for a child to terrify. He befriends Akhrot, a slum kid, and helps him take on t...
+   Keywords: ['political satire', 'sitcom']
+
+                                                            
+
+============================================================
+TEST MOVIE 10: Munna Bhai M.B.B.S.
+============================================================
+Munna Bhai M.B.B.S. (2003) - Rating: 7.164/10
+Overview: A gangster sets out to fulfill his father's dream of becoming a doctor....
+
+Genres: ['Comedy', 'Drama']
+Keywords: ['medicine', 'hospital', 'medical drama']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Shankar Dada M.B.B.S. - Score: 0.8856
+   Year: 2004
+   Rating: 6.5/10
+   Overview: Shankar Dada is a local goon who sets out to fulfill his parents' dream of him being a doctor. With help from his sidekick ATM, he enrolls himself in ...
+   Keywords: ['remake', 'fake doctor']
+
+2. Vasool Raja MBBS - Score: 0.8852
+   Year: 2004
+   Rating: 6.8/10
+   Overview: A goon, Rajaraman, enrols himself in a medical college to fulfil his father's dream. He defies the college rules and creates problems for Dr Vishwanat...
+   Keywords: []
+
+3. Saindhav - Score: 0.8777
+   Year: 2024
+   Rating: 5.3/10
+   Overview: The father of a sick child takes on a criminal gang running a pharmaceutical racket....
+   Keywords: []
+
+4. Gangster Gangaraju - Score: 0.8622
+   Year: 2022
+   Rating: 6.0/10
+   Overview: Apart from wanting to win the girl he loves, Gangaraju, a good-for-nothing guy, becomes a Gangster to save his village....
+   Keywords: []
+
+5. Tees Maar Khan - Score: 0.8590
+   Year: 2022
+   Rating: 6.2/10
+   Overview: Tees Maar Khan, a college student, dreams of joining the police force and his hard work pays off when he joins the force. Soon, Tees Maar Khan starts ...
+   Keywords: []
+
+6. Sulthan - Score: 0.8588
+   Year: 2021
+   Rating: 5.325/10
+   Overview: A man raised by gangsters tries to reform them, and a hired job to protect a village presents him with the perfect opportunity....
+   Keywords: []
+
+7. Nayakan - Score: 0.8583
+   Year: 1987
+   Rating: 7.807/10
+   Overview: Velu Naicker, who witnesses the brutal murder of his father, kills a corrupt policeman and escapes to Mumbai, only to become a gangster....
+   Keywords: ['gangster', 'gang war', 'symbolism', 'revenge', 'religion', 'india', 'family tragedy', 'rise to power', 'corrupt system', 'life in the slums']
+
+8. Gangvaa - Score: 0.8577
+   Year: 1984
+   Rating: 7.1/10
+   Overview: Gangvaa embarks on a quest for revenge against a crooked landlord after he orders the death of his father for reporting his crimes to the police and g...
+   Keywords: []
+
+9. Baazaar - Score: 0.8577
+   Year: 2018
+   Rating: 6.194/10
+   Overview: After moving to Mumbai, an ambitious young man becomes the stock trader for a notorious businessman....
+   Keywords: ['stock market', 'business tycoon']
+
+10. Bhai - Score: 0.8574
+   Year: 1997
+   Rating: 5.143/10
+   Overview: Kundan, a simple village boy, comes to the city with his younger brother to earn a living. However, fate compels him to take a few erroneous steps tha...
+   Keywords: []
+
+                                                            
+
+============================================================
+TEST MOVIE 11: Singham Again
+============================================================
+Singham Again (2024) - Rating: 5.0/10
+Overview: The cop universe expands with newer additions while the old ones return led by Bajirao Singham. Singham Again interweaves the mythological epic Ramayana's good vs evil narrative when his wife Avni Kam...
+
+Genres: ['Action', 'Drama', 'Thriller', 'Crime']
+Keywords: ['singham 3', 'rohit shetthy universe']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Singham Returns - Score: 0.8580
+   Year: 2014
+   Rating: 6.138/10
+   Overview: Owing to the wrongdoings affiliated with evils similar to black money, an honest but ferocious police officer returns as the Deputy Commissioner of Po...
+   Keywords: ['sequel', 'police officer', 'cop universe']
+
+2. Little Singham: Kaal Ka Badla - Score: 0.8557
+   Year: 2020
+   Rating: 10.0/10
+   Overview: Little Singham's biggest enemy, the demon Kaal, is back and badder than ever -- but this time, will he succeed in destroying the world's best kid cop?...
+   Keywords: []
+
+3. Avane Srimannarayana - Score: 0.8517
+   Year: 2019
+   Rating: 7.444/10
+   Overview: In the pursuit of solving an ancient mystery of Amaravati, Narayana, a corrupt cop must battle the dangerous clan of dacoits and it's fierce leader....
+   Keywords: []
+
+4. Mardaani 3 - Score: 0.8495
+   Year: 2026
+   Rating: 7.26/10
+   Overview: Officer Shivani Shivaji Roy returns to hunt down those behind the disappearance of young girls, risking everything to bring them back alive....
+   Keywords: []
+
+5. Little Singham: Kaal Ki Tabaahi - Score: 0.8483
+   Year: 2019
+   Rating: 8.0/10
+   Overview: Kaal is back -- bigger and badder than ever! Can Little Singham fight the battle of a lifetime to stop the demon’s plans to wreak havoc on earth?...
+   Keywords: []
+
+6. Singham - Score: 0.8474
+   Year: 2011
+   Rating: 6.52/10
+   Overview: An honest, small town cop is transferred to a big city that is controlled by a crime boss that he had once humiliated....
+   Keywords: ['fight', 'remake', 'one man army', 'job transfer', 'love interest', 'tough guy', 'police officer', 'flipping car', 'cop universe']
+
+7. Sabari - Score: 0.8465
+   Year: 2007
+   Rating: 5.0/10
+   Overview: Sabari goes on a 'revenge' mode and bumps off the rowdy elements, who are disturbing peace and tranquility in the city.From a serious cop to a caring ...
+   Keywords: []
+
+8. Chhota Bheem: The Rise of Kirmada - Score: 0.8459
+   Year: 2012
+   Rating: 4.7/10
+   Overview: Bheem and young lord Krishna team up to protect the world against the wicked and powerful Kirmada and his equally dangerous bat army....
+   Keywords: []
+
+9. Tejas - Score: 0.8428
+   Year: 2023
+   Rating: 4.0/10
+   Overview: Indian Air Force officer Tejas sets out on a dangerous mission to rescue an Indian spy from Pakistan. While she faces the terrorists that come her way...
+   Keywords: []
+
+10. Gambeeram - Score: 0.8423
+   Year: 2004
+   Rating: 5.0/10
+   Overview: A fearless police officer crosses swords with a local politician, and in the fight, he loses his wife. Unabated and with more power, he rises again to...
+   Keywords: []
+
+                                                            
+
+============================================================
+TEST MOVIE 12: Panneer Pushpangal
+============================================================
+Panneer Pushpangal (1981) - Rating: 8.0/10
+Overview: Two high school students receive ample support from one of their teachers to fall in love with each other. But problems arise when their parents come to know about their relationship....
+
+Genres: ['Romance', 'Drama', 'Adventure', 'Comedy']
+Keywords: []
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Oru Pakka Kathai - Score: 0.8795
+   Year: 2020
+   Rating: 6.0/10
+   Overview: A young couple, Meera and Saravanan, are all set to get married after their parents approve of their long-standing love. But all hell breaks loose whe...
+   Keywords: []
+
+2. Natpadhigaram 79 - Score: 0.8780
+   Year: 2016
+   Rating: 5.0/10
+   Overview: The relationship of four friends comes under strain when their parents wrongly assume the rapport between two among them to be in love....
+   Keywords: []
+
+3. Deshadanakkili Karayarilla - Score: 0.8764
+   Year: 1986
+   Rating: 5.9/10
+   Overview: Two school students plan to runaway while on the school trip. But with the entering of an uninvited man in the situation for their help and one of the...
+   Keywords: ['lgbt']
+
+4. Pariyerum Perumal - Score: 0.8718
+   Year: 2018
+   Rating: 8.2/10
+   Overview: A law student from a lower caste begins a friendship with his classmate, a girl who belongs to a higher caste, and the men in her family start giving ...
+   Keywords: ['honor killing', 'caste politics']
+
+5. Meendum Oru Kadhal Kadhai - Score: 0.8711
+   Year: 2016
+   Rating: 5.7/10
+   Overview: A Hindu boy falls in love with a Muslim girl. Naturally, this romance faces problems....
+   Keywords: ['inter religion relationship']
+
+6. Jaanam - Score: 0.8696
+   Year: 1992
+   Rating: 5.0/10
+   Overview: A boy and girl from opposing families meet and fall in love, determined not to let the hate between their parents stand in the way of their happiness....
+   Keywords: []
+
+7. Kadhal Desam - Score: 0.8681
+   Year: 1996
+   Rating: 6.3/10
+   Overview: Two boys from rival colleges, one rich and the other poor, become good friends after an incident. A new girl in college makes both their hearts melt b...
+   Keywords: ['love triangle', 'college', 'love']
+
+8. Ishq - Score: 0.8664
+   Year: 1997
+   Rating: 6.329/10
+   Overview: The children of two wealthy businessman fall in love with someone from a poor background, much to their parents' disapprovals....
+   Keywords: ['musical']
+
+9. Ennodishtam Koodamo - Score: 0.8662
+   Year: 1992
+   Rating: 4.0/10
+   Overview: A campus love story where the daughter of a policeman falls in love with a poor man but, her parents wish for her to marry a policeman....
+   Keywords: []
+
+10. Apoorva Raagangal - Score: 0.8661
+   Year: 1975
+   Rating: 7.5/10
+   Overview: A young man and an older woman fall in love and decide to marry. However, their lives become more complicated when he learns that his father is in lov...
+   Keywords: ['love triangle', 'relationship problems', 'love puzzle']
+
+                                                            
+
+============================================================
+TEST MOVIE 13: Krishna and Kamsa
+============================================================
+Krishna and Kamsa (2012) - Rating: 8.0/10
+Overview: Hailed as India's first stereoscopic animated film, 'Krishna Aur Kans' is an exciting narrative full of action and drama. The movie chronicles Krishna's early years -- from his birth as the nemesis of...
+
+Genres: ['Drama', 'Animation', 'Action']
+Keywords: ['legend', 'india', 'mythological', 'krishna', 'chronicle']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. Little Krishna - The Legendary Warrior - Score: 0.8755
+   Year: 2009
+   Rating: 10.0/10
+   Overview: The kingdom of Vrindavan is threatened by the evil king Kamsa who is hell-bent on murdering Lord  Krishna. However, little Krishna is equal to the tas...
+   Keywords: []
+
+2. Krishna - Makhan Chor - Score: 0.8690
+   Year: 2007
+   Rating: 10.0/10
+   Overview: Krishna - Makhan Chor shows the infant Krishna growing up in Gokul under the love and care of his foster parents, Nand-Lal and Yashoda, to become the ...
+   Keywords: []
+
+3. Krishna - The Birth - Score: 0.8648
+   Year: 2006
+   Rating: 10.0/10
+   Overview: Krishna - The Birth is the enchanting tale of the miraculous birth of Lord Vishnu in the form of baby Krishna to Vasudev and Devaki. The story is set ...
+   Keywords: ['krishna', 'lord krishna']
+
+4. Little Krishna - The Darling of Vrindavan - Score: 0.8598
+   Year: 2009
+   Rating: 10.0/10
+   Overview: Little Krishna is the darling of Vrindavan, the land of peace and tranquility, which is constantly threatened by the malice of evil king Kansa....
+   Keywords: []
+
+5. Chhota Bheem: The Rise of Kirmada - Score: 0.8576
+   Year: 2012
+   Rating: 4.7/10
+   Overview: Bheem and young lord Krishna team up to protect the world against the wicked and powerful Kirmada and his equally dangerous bat army....
+   Keywords: []
+
+6. Mahayoddha Rama - Score: 0.8567
+   Year: 2016
+   Rating: 5.0/10
+   Overview: Mahayoddha Rama - Hindi Mahayoddha Rama is an animated 3D film that retells the Ramayana from the villain Ravanas perspective, featuring his ten heads...
+   Keywords: []
+
+7. Ramayana: The Epic - Score: 0.8558
+   Year: 2010
+   Rating: 5.6/10
+   Overview: The film is a retelling of the story of Lord Rama, from his birth until his battle with Ravan at Sri Lanka....
+   Keywords: ['hindu mythology']
+
+8. Krishna in Vrindavan - Score: 0.8476
+   Year: 2007
+   Rating: 10.0/10
+   Overview: The adventures of Krishna and his friends in Vrindavan are filled with action and excitement, as they discover new forests and face new demons. All th...
+   Keywords: []
+
+9. Sree Hari Hara Sudhan Swami Ayyappan - Score: 0.8455
+   Year: 2017
+   Rating: 9.0/10
+   Overview: Sree Hari Hara Sudhan Swami Ayyappan Movie is Fully 3D Animated Devotional Story of Lord Ayyappan....
+   Keywords: ['hinduism', 'devotional']
+
+10. Krishna - Kans Vadh - Score: 0.8450
+   Year: 2008
+   Rating: 10.0/10
+   Overview: Krishna's miraculous deeds soon reach the court of Kansa. He soon devises a sinister plan to finish Krishna and invites him to Mathura. Krishna and Ba...
+   Keywords: []
+
+                                                            
+
+============================================================
+TEST MOVIE 14: Ra.One
+============================================================
+Ra.One (2011) - Rating: 5.7/10
+Overview: When the titular antagonist of an action game takes on physical form, it's up to the game's less powerful protagonist to save the world....
+
+Genres: ['Adventure', 'Action', 'Science Fiction']
+Keywords: ['video game', 'superhero', 'villain', 'science fiction', 'action', 'adventure']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. A Flying Jatt - Score: 0.8500
+   Year: 2016
+   Rating: 3.12/10
+   Overview: Jatt is a reluctant superhero that fights crime and protects people. He meets his match in the evil Raka who he must face off to save the day....
+   Keywords: ['superhero']
+
+2. Komban - Score: 0.8395
+   Year: 2015
+   Rating: 5.059/10
+   Overview: An angry young man tries to give up his violent ways after his marriage runs into trouble. But his nemesis will not rest until he is killed....
+   Keywords: []
+
+3. Chhota Bheem: The Rise of Kirmada - Score: 0.8371
+   Year: 2012
+   Rating: 4.7/10
+   Overview: Bheem and young lord Krishna team up to protect the world against the wicked and powerful Kirmada and his equally dangerous bat army....
+   Keywords: []
+
+4. Sri Anjaneyam - Score: 0.8366
+   Year: 2004
+   Rating: 4.5/10
+   Overview: Brahmam, a corrupt politician, kills Anji's parents and plans to demolish a temple. To help Anji fight the politician, Lord Anjaneya takes human form ...
+   Keywords: []
+
+5. Jigar - Score: 0.8357
+   Year: 1992
+   Rating: 4.643/10
+   Overview: When a gangster takes over the art of karate and causes unrest in a town, one man rises to fight against them....
+   Keywords: ['martial arts', 'challenge', 'revenge']
+
+6. Sree Ayyappan - Score: 0.8351
+   Year: 2025
+   Rating: 2.0/10
+   Overview: Lord Ayyappa takes human form to stop terrorists targeting a major temple. The National Anti-Terrorist Squad and Indian Army launch a joint operation ...
+   Keywords: []
+
+7. Help - Score: 0.8350
+   Year: 2010
+   Rating: 2.1/10
+   Overview: "HELP" is a supernatural horror thriller which draws upon the story of a malevolent spirit that refuses to leave the human world and is out to exact r...
+   Keywords: ['husband wife relationship', 'twin sister', 'possession', 'evil spirit', 'murder', 'psychiatrist']
+
+8. Ram Robert Rahim - Score: 0.8348
+   Year: 1980
+   Rating: 5.0/10
+   Overview: Three brothers, who were separated at birth, are brought up in different religions and are reunited by fate. Together, they combat the evil man respon...
+   Keywords: ['woman director']
+
+9. UI - Score: 0.8340
+   Year: 2024
+   Rating: 5.1/10
+   Overview: Set in a fictional world, the story is about the psychological conflict between a king in a town and an extraordinary man, and how that man, through h...
+   Keywords: []
+
+10. Action Jackson - Score: 0.8338
+   Year: 2014
+   Rating: 4.232/10
+   Overview: A man meets his lookalike, who's not just a killer of evil, but also a kind hearted man. Together, they team up to fight against a dreaded gangster....
+   Keywords: ['fight', 'sword', 'gun', 'gangster', 'bangkok, thailand', 'mumbai (bombay), india', 'bad luck', 'friends', 'look-alike', 'lust', 'killer', 'seductress']
+
+                                                            
+
+============================================================
+TEST MOVIE 15: K.G.F: Chapter 1
+============================================================
+K.G.F: Chapter 1 (2018) - Rating: 7.493/10
+Overview: A period drama set in the 1970s, KGF follows the story of a fierce rebel who rises against the brutal oppression in Kolar Gold Fields and becomes the symbol of hope to legions of downtrodden people....
+
+Genres: ['Action', 'Thriller', 'Adventure', 'Crime']
+Keywords: ['gold', 'undercover', 'gold mine', 'one man army', 'action hero', 'period film']
+
+TOP 10 RECOMMENDATIONS:
+------------------------------------------------------------
+
+1. K.G.F: Chapter 2 - Score: 0.8764
+   Year: 2022
+   Rating: 7.4/10
+   Overview: The blood-soaked land of Kolar Gold Fields (KGF) has a new overlord now - Rocky, whose name strikes fear in the heart of his foes. His allies look up ...
+   Keywords: ['undercover', 'sequel', 'one man army', 'action hero']
+
+2. Pailwaan - Score: 0.8621
+   Year: 2019
+   Rating: 5.95/10
+   Overview: A fierce wrestler becomes the symbol of hope for his people when he rises against the odds and fights the brutal oppression....
+   Keywords: []
+
+3. Head Bush: Vol 1 - Score: 0.8561
+   Year: 2022
+   Rating: 6.7/10
+   Overview: Head Bush revolves around Jayaraj, his friends, foes, police officers, and the politicians who changed the course of the political scenario of Bengalu...
+   Keywords: ['politics', 'biography', 'mafia', 'power politics']
+
+4. Bhairava Geetha - Score: 0.8549
+   Year: 2018
+   Rating: 6.0/10
+   Overview: Set against the backdrop of violent class, a love story of a man who turns into a rebel in a battle between feudal-minded oppressors and the downtrodd...
+   Keywords: []
+
+5. Yaathisai - Score: 0.8533
+   Year: 2023
+   Rating: 7.0/10
+   Overview: Set in the 7th century,  Kodhi, an young hot-blooded warrior from the Einar clan, believes that his birth is destined to free his fellows from the nom...
+   Keywords: []
+
+6. Kranti - Score: 0.8501
+   Year: 1981
+   Rating: 6.2/10
+   Overview: The film takes place in 19th Century British India and is the story of the fight for independence from the British in the years spanning from 1825 to ...
+   Keywords: []
+
+7. Bachhala Malli - Score: 0.8499
+   Year: 2024
+   Rating: 4.3/10
+   Overview: The story is set in the 1990s and follows the emotional and action-filled journey of Bachhala Malli, a rural hero. The narrative combines intense dram...
+   Keywords: []
+
+8. Laal Kaptaan - Score: 0.8481
+   Year: 2019
+   Rating: 7.204/10
+   Overview: In 18th century India, a Naga Sadhu sets out on a journey across Bundelkhand to seek revenge for an injustice committed in the past....
+   Keywords: ['bounty hunter', 'sadhu']
+
+9. Ghulami - Score: 0.8479
+   Year: 1985
+   Rating: 7.3/10
+   Overview: In feudal Rajasthan, a bunch of peasants rise up against the exploitative landowners and the age-old system of caste-based oppression....
+   Keywords: []
+
+10. Bāhubali: The Beginning - Score: 0.8465
+   Year: 2015
+   Rating: 7.523/10
+   Overview: The young Shivudu is left as a foundling in a small village by his mother. By the time he’s grown up, it has become apparent that he possesses excepti...
+   Keywords: ['kingdom', 'medieval india', 'ancient india', 'bilingual']
+
+                                                            

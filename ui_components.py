@@ -10,6 +10,7 @@ import random
 import re
 from typing import Optional
 
+import pandas as pd
 import streamlit as st
 
 from favourites import export_favourites_csv
@@ -45,6 +46,28 @@ EXAMPLE_QUERIES = [
     "A gritty gangster saga set in urban streets with moral ambiguity",
     "An emotional father-daughter story that will make you cry and laugh",
 ]
+
+
+def _normalise_genre_label(value) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", str(value or "").lower()).strip()
+
+
+def _genre_tokens(genres_val) -> set[str]:
+    if isinstance(genres_val, list):
+        raw_items = genres_val
+    elif isinstance(genres_val, str):
+        raw_items = re.split(r"[|,;/]", genres_val)
+    else:
+        return set()
+    return {
+        token
+        for token in (_normalise_genre_label(item) for item in raw_items)
+        if token
+    }
+
+
+def _has_action_genre(genres_val) -> bool:
+    return "action" in _genre_tokens(genres_val)
 
 
 # ── CSS injection ─────────────────────────────────────────────────────────────
@@ -351,10 +374,10 @@ def render_hero_section(df=None) -> None:
     </div>
     """, unsafe_allow_html=True)
 
-    # Show 4 random non-adult teaser posters with Action-first priority.
+    # Show 4 random non-adult teaser posters from post-2015 Action titles.
     if df is not None and len(df) > 0:
         st.markdown(
-            "<p style='text-align:center;color:#444;font-size:0.85em;margin-bottom:10px'> Action picks right now</p>",
+            "<p style='text-align:center;color:#444;font-size:0.85em;margin-bottom:10px'> Action picks after 2015</p>",
             unsafe_allow_html=True,
         )
         try:
@@ -380,17 +403,16 @@ def render_hero_section(df=None) -> None:
                 )
                 pool = pool[~adult_mask]
 
-            def _has_action(genres_val) -> bool:
-                if isinstance(genres_val, list):
-                    return any(str(g).strip().lower() == "action" for g in genres_val)
-                return bool(re.search(r"\\baction\\b", str(genres_val or "").lower()))
+            if "release_year" in pool.columns:
+                year_mask = pd.to_numeric(pool["release_year"], errors="coerce").fillna(0) > 2015
+                pool = pool[year_mask]
 
             if "genres" in pool.columns:
                 action_pool = pool[pool["genres"].apply(_has_action)]
             else:
                 action_pool = pool.iloc[0:0]
 
-            source_pool = action_pool if len(action_pool) > 0 else pool
+            source_pool = action_pool
             sample_base = source_pool.nlargest(min(300, len(source_pool)), "popularity")
             sample = sample_base.sample(min(4, len(sample_base))) if len(sample_base) > 0 else sample_base
 

@@ -1,0 +1,6 @@
+Model	Status	Time	Notes
+intfloat/e5-large-v2	OK	170.68s
+BAAI/bge-large-en-v1.5	OK	9.07s
+sentence-transformers/all-mpnet-base-v2	OK	4.50s
+intfloat/e5-base-v2	OK	63.93s
+all-MiniLM-L6-v2	OK	3.07s
