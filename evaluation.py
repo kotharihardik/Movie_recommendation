@@ -49,8 +49,11 @@ Usage:
 
 from __future__ import annotations
 
+import io
 import math
+import sys
 import time
+from contextlib import redirect_stdout
 from typing import Optional
 
 import numpy as np
@@ -110,6 +113,43 @@ def _bootstrap_ci(values: list[float], n_boot: int = 1000, alpha: float = 0.05, 
 
 
 # ─── Ground-truth builder ────────────────────────────────────────────────────
+
+MANUAL_GROUND_TRUTH = {
+    "Don": {"relevant": ["Don 2", "Deewaar", "Zanjeer", "Agneepath", "Kaante", "Race", "Dhoom 2", "Ek Villain", "Shootout at Lokhandwala", "Badlapur", "Raajneeti", "D-Day"]},
+    "Sholay": {"relevant": ["Deewaar", "Zanjeer", "Don", "Kaala Patthar", "Trishul", "Muqaddar Ka Sikandar", "Agneepath", "Amar Akbar Anthony", "Coolie", "Ganga Jamuna", "Shaan"]},
+    "Hera Pheri": {"relevant": ["Phir Hera Pheri", "Welcome", "Bhool Bhulaiyaa", "Golmaal", "Dhamaal", "Hungama", "Malamaal Weekly", "Chup Chup Ke", "De Dana Dan", "Housefull"]},
+    "Pathaan": {"relevant": ["War", "Tiger Zinda Hai", "Ek Tha Tiger", "Jawan", "Raees", "Bang Bang!", "Don 2", "Race", "Dhoom 2", "Mission Majnu", "Sooryavanshi", "An Action Hero"]},
+    "Heropanti": {"relevant": ["Baaghi", "Baaghi 2", "Baaghi 3", "War", "Student of the Year", "A Flying Jatt", "Singham", "Kick", "Race 3", "Ek Villain", "Khushi", "Marjaavaan"]},
+    "Saiyaara": {"relevant": ["Aashiqui 2", "Ek Villain", "Rockstar", "Kabir Singh", "Malang", "Hamari Adhuri Kahani", "Sanam Teri Kasam", "Half Girlfriend", "Shiddat", "Laila Majnu", "Dil Bechara", "Raanjhanaa"]},
+    "Krrish 3": {"relevant": ["Koi... Mil Gaya", "Krrish", "Ra.One", "Robot", "2.0", "A Flying Jatt", "War", "Dhoom 2", "Eega", "Baahubali: The Beginning", "Mr. X"]},
+    "PK": {"relevant": ["3 Idiots", "OMG: Oh My God!", "Munna Bhai M.B.B.S.", "Lage Raho Munna Bhai", "Taare Zameen Par", "Chhichhore", "Queen", "Hindi Medium", "Bhool Bhulaiyaa", "Dil Chahta Hai", "Zero", "Dunki"]},
+    "OMG: Oh My God!": {"relevant": ["PK", "Munna Bhai M.B.B.S.", "Lage Raho Munna Bhai", "3 Idiots", "Hindi Medium", "Taare Zameen Par", "Chhichhore", "Queen", "Bhool Bhulaiyaa", "Welcome", "Khatta Meetha"]},
+    "Kantara": {"relevant": ["KGF: Chapter 1", "Vikrant Rona", "777 Charlie", "Asuran", "Pushpa: The Rise", "Jai Bhim", "Kaithi", "RRR", "Vikram", "Ugramm", "Vikram Vedha"]},
+    "Drishyam": {"relevant": ["Andhadhun", "Kahaani", "Ratsasan", "Talvar", "Article 15", "Badla", "Special 26", "Ugly", "A Wednesday!", "Vikram Vedha", "Madaari", "Force"]},
+}
+
+
+def _normalize_title(value) -> str:
+    return " ".join(str(value or "").strip().lower().split())
+
+
+def _manual_ground_truth_to_indices(df: pd.DataFrame, title: str) -> dict:
+    manual = MANUAL_GROUND_TRUTH.get(title, {})
+    relevant_titles = manual.get("relevant", [])
+
+    title_lookup: dict[str, set[int]] = {}
+    for idx, row in df.iterrows():
+        movie_title = _normalize_title(row.get("title", ""))
+        if not movie_title:
+            continue
+        title_lookup.setdefault(movie_title, set()).add(idx)
+
+    relevant: set[int] = set()
+    for related_title in relevant_titles:
+        relevant.update(title_lookup.get(_normalize_title(related_title), set()))
+
+    return {"relevant": relevant, "highly_relevant": set()}
+
 
 def _genre_set(val) -> set:
     import re
@@ -232,7 +272,28 @@ def ild(result_indices: list, embed_vecs: np.ndarray) -> float:
     return float(np.mean([1.0 - float(sims[i, j]) for i, j in pairs]))
 
 
+def _format_metrics_row(title: str, metrics: dict, retrieved_count: int, relevant_count: int, k: int) -> str:
+    """Format a single query result as a clean metrics row."""
+    p   = metrics.get("P", 0)
+    rc  = metrics.get("R", 0)
+    mr  = metrics.get("MRR", 0)
+    ap  = metrics.get("MAP", 0)
+    nd  = metrics.get("NDCG", 0)
+    ild = metrics.get("ILD", 0)
+    return f"  {title[:40]:<40} | P@{k}={p:.3f} R@{k}={rc:.3f} MAP@{k}={ap:.3f} NDCG@{k}={nd:.3f} ILD={ild:.3f} | rel={relevant_count:2d} ret={retrieved_count:2d}"
+
+
+def _format_movie_list(movies: list[str], max_show: int = 5) -> str:
+    """Format a list of movie titles into a compact string."""
+    if not movies:
+        return "—"
+    display = movies[:max_show]
+    suffix = f" +{len(movies) - max_show} more" if len(movies) > max_show else ""
+    return ", ".join(display) + suffix
+
+
 def _catalog_coverage(all_retrieved: list[list[int]], total_catalog_size: int) -> float:
+    """Fraction of unique items recommended across all queries."""
     seen: set[int] = set()
     for rec in all_retrieved:
         seen.update(rec)
@@ -519,6 +580,9 @@ def run_evaluation(
     print(f"  {D}Strategy : {strategy_note}{R}")
     print(f"  {D}Query type: {query_note}{R}")
     print(f"  {D}Sampling : min_vote_count>=25  min_vote_avg>=6.0  top_n={top_n}  seed={sample_seed}{R}")
+    print(f"\n{B}{C}Per-Query Metrics{R}")
+    print(f"  {'Movie Title':<35} | Metrics (P@K, R@K, MAP@K, NDCG@K, ILD) | Stats")
+    print(f"  {'-'*130}")
 
     agg: dict[str, list[float]] = {f"Precision@{k}": [] for k in ks}
     agg.update({f"Recall@{k}": [] for k in ks})
@@ -545,19 +609,20 @@ def run_evaluation(
             print(f"\n  {B}{W}{desc}  ->  \"{title}\"{R}")
 
         try:
-            results, _ = eng.get_recommendations(
-                collection=None,
-                movie_title=title,
-                free_text=free_text,
-                selected_chips=[],
-                language_codes=lang_codes,
-                top_n=top_n,
-                min_rating=min_rating,
-                decade_filter=None,
-                include_old_movies=False,
-                diversify=False,
-                df=df,
-            )
+            with redirect_stdout(io.StringIO()):
+                results, _ = eng.get_recommendations(
+                    collection=None,
+                    movie_title=title,
+                    free_text=free_text,
+                    selected_chips=[],
+                    language_codes=lang_codes,
+                    top_n=top_n,
+                    min_rating=min_rating,
+                    decade_filter=None,
+                    include_old_movies=False,
+                    diversify=False,
+                    df=df,
+                )
         except Exception as e:
             print(f"    {RE}x Failed: {e}{R}")
             skipped_count += 1
@@ -583,9 +648,34 @@ def run_evaluation(
             skipped_count += 1
             continue
 
-        gt              = _build_ground_truth(df, anchor_idx)
-        relevant        = gt["relevant"]
-        highly_relevant = gt["highly_relevant"]
+        gt = _manual_ground_truth_to_indices(df, title)
+        relevant = gt["relevant"]
+        highly_relevant = set()
+
+        # Get recommended movie titles (deduplicated)
+        recommended_titles = []
+        seen_titles = set()
+        for r in results[:10]:
+            norm_title = _normalize_title(r.title)
+            if norm_title not in seen_titles:
+                recommended_titles.append(r.title)
+                seen_titles.add(norm_title)
+        
+        # Get ground truth movie titles (deduplicated)
+        ground_truth_titles = []
+        seen_gt = set()
+        for idx in relevant:
+            if idx < len(df):
+                movie_title = df.loc[idx, "title"]
+                norm_title = _normalize_title(movie_title)
+                if norm_title not in seen_gt:
+                    ground_truth_titles.append(movie_title)
+                    seen_gt.add(norm_title)
+        
+        # Get matches (movies that were recommended AND in ground truth)
+        ground_truth_set = set(_normalize_title(t) for t in ground_truth_titles)
+        recommended_normalized = {_normalize_title(t): t for t in recommended_titles}
+        matched_titles = [recommended_normalized[norm_t] for norm_t in recommended_normalized if norm_t in ground_truth_set]
 
         query_fame = _fame_bias(retrieved, fame_scores) - (float(np.mean(fame_scores)) if fame_scores is not None else 0.0)
         dv  = ild(retrieved, embed_vecs) if embed_vecs is not None else 0.0
@@ -612,26 +702,18 @@ def run_evaluation(
         agg["FameBias"].append(query_fame)
 
         p, rc, mr, ap, nd = per_k[primary_k]
-        if verbose:
-            print(f"    {D}relevant={len(relevant)}  highly_relevant={len(highly_relevant)}  "
-                  f"retrieved={len(retrieved)}{R}")
-            for k in ks:
-                pk, rck, mrk, apk, ndk = per_k[k]
-                _row(f"P@{k}", pk)
-                _row(f"R@{k}", rck)
-                if k == primary_k:
-                    _row(f"MRR@{k}", mrk)
-                    _row(f"MAP@{k}", apk)
-                    _row(f"NDCG@{k}", ndk, "<- primary ranking metric")
-            _row("ILD",            dv, "diversity within result list")
-            _row("Fame bias",      query_fame, "recommendations vs catalogue baseline")
-        else:
-            print(
-                f"  [{idx:02d}/{len(normalized_queries):02d}] "
-                f"{title[:26]:<26} | {desc[:34]:<34} | "
-                f"NDCG@{primary_k}={nd:.3f} R@{primary_k}={rc:.3f} "
-                f"P@{primary_k}={p:.3f} ILD={dv:.3f} FameΔ={query_fame:+.3f}"
-            )
+        metrics = {"P": p, "R": rc, "MRR": mr, "MAP": ap, "NDCG": nd, "ILD": dv}
+        
+        if not verbose:
+            print(f"\n  {B}{C}Query: {title}{R}")
+            print(f"  {D}Recommended ({len(recommended_titles)}): {', '.join(recommended_titles)}{R}")
+            print(f"  {D}Ground Truth ({len(ground_truth_titles)}): {', '.join(ground_truth_titles)}{R}")
+            if matched_titles:
+                print(f"  {G}✓ Matched ({len(matched_titles)}): {_format_movie_list(matched_titles, max_show=10)}{R}")
+            else:
+                print(f"  {RE}✗ Matched (0): —{R}")
+            row = _format_metrics_row(title, metrics, len(retrieved), len(relevant), primary_k)
+            print(row)
 
     # ── Aggregate summary ────────────────────────────────────────────────────
     means = {k: _mean_std(v)[0] for k, v in agg.items() if v}
@@ -696,8 +778,21 @@ if __name__ == "__main__":
         # 2. Build engine
         build_engine(df)
         
-        # 3. Run full evaluation
-        run_evaluation(sample_size=SAMPLE_SIZE, sample_seed=SAMPLE_SEED, verbose=VERBOSE)
+        # 3. Build queries from MANUAL_GROUND_TRUTH movies only
+        manual_queries = [
+            {
+                "movie_title": title,
+                "language_codes": ["hi"],  # Assuming Hindi for Indian movies
+                "description": f"Query: {title}",
+                "free_text": None,
+                "anchor_idx": None,
+            }
+            for title in MANUAL_GROUND_TRUTH.keys()
+        ]
+        
+        # 4. Run full evaluation with only manual ground truth movies
+        print(f"\n{C}Running evaluation on {len(manual_queries)} manual ground truth movies...{R}\n")
+        run_evaluation(queries=manual_queries, verbose=VERBOSE)
 
     except Exception as e:
         print(f"\n{RE}Error during evaluation: {e}{R}")
