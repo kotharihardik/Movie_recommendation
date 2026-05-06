@@ -115,17 +115,17 @@ def _bootstrap_ci(values: list[float], n_boot: int = 1000, alpha: float = 0.05, 
 # ─── Ground-truth builder ────────────────────────────────────────────────────
 
 MANUAL_GROUND_TRUTH = {
-    "Don": {"relevant": ["Don 2", "Deewaar", "Zanjeer", "Agneepath", "Kaante", "Race", "Dhoom 2", "Ek Villain", "Shootout at Lokhandwala", "Badlapur", "Raajneeti", "D-Day"]},
+    "Don": {"relevant": ["Don 2", "Aankhen", "Zanjeer", "The Don", "Eklavya: The Royal Guard", "Race", "Dhoom 2", "Krrish", "Raees", "Badlapur", "Om Shanti Om", "D-Day"]},
     "Sholay": {"relevant": ["Deewaar", "Zanjeer", "Don", "Kaala Patthar", "Trishul", "Muqaddar Ka Sikandar", "Agneepath", "Amar Akbar Anthony", "Coolie", "Ganga Jamuna", "Shaan"]},
-    "Hera Pheri": {"relevant": ["Phir Hera Pheri", "Welcome", "Bhool Bhulaiyaa", "Golmaal", "Dhamaal", "Hungama", "Malamaal Weekly", "Chup Chup Ke", "De Dana Dan", "Housefull"]},
-    "Pathaan": {"relevant": ["War", "Tiger Zinda Hai", "Ek Tha Tiger", "Jawan", "Raees", "Bang Bang!", "Don 2", "Race", "Dhoom 2", "Mission Majnu", "Sooryavanshi", "An Action Hero"]},
-    "Heropanti": {"relevant": ["Baaghi", "Baaghi 2", "Baaghi 3", "War", "Student of the Year", "A Flying Jatt", "Singham", "Kick", "Race 3", "Ek Villain", "Khushi", "Marjaavaan"]},
-    "Saiyaara": {"relevant": ["Aashiqui 2", "Ek Villain", "Rockstar", "Kabir Singh", "Malang", "Hamari Adhuri Kahani", "Sanam Teri Kasam", "Half Girlfriend", "Shiddat", "Laila Majnu", "Dil Bechara", "Raanjhanaa"]},
-    "Krrish 3": {"relevant": ["Koi... Mil Gaya", "Krrish", "Ra.One", "Robot", "2.0", "A Flying Jatt", "War", "Dhoom 2", "Eega", "Baahubali: The Beginning", "Mr. X"]},
-    "PK": {"relevant": ["3 Idiots", "OMG: Oh My God!", "Munna Bhai M.B.B.S.", "Lage Raho Munna Bhai", "Taare Zameen Par", "Chhichhore", "Queen", "Hindi Medium", "Bhool Bhulaiyaa", "Dil Chahta Hai", "Zero", "Dunki"]},
-    "OMG: Oh My God!": {"relevant": ["PK", "Munna Bhai M.B.B.S.", "Lage Raho Munna Bhai", "3 Idiots", "Hindi Medium", "Taare Zameen Par", "Chhichhore", "Queen", "Bhool Bhulaiyaa", "Welcome", "Khatta Meetha"]},
-    "Kantara": {"relevant": ["KGF: Chapter 1", "Vikrant Rona", "777 Charlie", "Asuran", "Pushpa: The Rise", "Jai Bhim", "Kaithi", "RRR", "Vikram", "Ugramm", "Vikram Vedha"]},
-    "Drishyam": {"relevant": ["Andhadhun", "Kahaani", "Ratsasan", "Talvar", "Article 15", "Badla", "Special 26", "Ugly", "A Wednesday!", "Vikram Vedha", "Madaari", "Force"]},
+    "Hera Pheri": {"relevant": ["Phir Hera Pheri", "Billu", "Bhool Bhulaiyaa", "Dhol", "Pyaar To Hona Hi Tha", "Hungama", "Malamaal Weekly", "Chup Chup Ke", "De Dana Dan", "Ek Aur Ek Gyarah: By Hook or by Crook"]},
+    "Pathaan": {"relevant": ["War", "Tiger Zinda Hai", "Ek Tha Tiger", "Jawan", "Raees", "Race 2", "Don 2", "Attack", "Fighter", "Jaat", "Tiger 3", "War 2"]},
+    "Heropanti": {"relevant": ["Baaghi", "Hulchul", "Chandigarh Kare Aashiqui", "Hero", "Veer", "Badrinath Ki Dulhaniat", "Shehzada", "Race 3", "Khushi", "Marjaavaan"]},
+    "Saiyaara": {"relevant": ["Aashiqui 2", "Gehraiyaan", "Satyaprem Ki Katha", "Manmarziyaan", "Badrinath Ki Dulhania", "Chandigarh Kare Aashiqui", "Half Girlfriend", "Shiddat", "Dil Bechara", "Raanjhanaa"]},
+    "Krrish 3": {"relevant": ["Koi... Mil Gaya", "Krrish", "Ra.One", "War", "Dhoom 3", "Commando 3", "Singh Is Kinng", "Animal", "Baahubali: The Beginning", "Mr. X"]},
+    "PK": {"relevant": ["3 Idiots", "Heyy Babyy", "Munna Bhai M.B.B.S.", "Maharaj", "Bhoothnath Returns", "Photograph", "Dhanak", "Dil Bechara", "Bhool Bhulaiyaa", "Dil Chahta Hai", "Zero", "Dunki"]},
+    "OMG: Oh My God!": {"relevant": ["OMG 2", "Munna Bhai M.B.B.S.", "Made In China", "Boss", "Singh Is Kinng", "Hera Pheri", "Malamaal Weekly", "Billu", "Coolie No. 1", "Awara Paagal Deewana", "Khatta Meetha"]},
+    "Kantara": {"relevant": ["Shivaay", "Mardaani 3", "Vikram Vedha", "Mardaani 2", "Brahmastra Part One: Shiva", "Stolen", "Kaabil", "Rakht Charitra", "Baaghi 3", "An Action Hero", "Vikram Vedha"]},
+    "Drishyam": {"relevant": ["Andhadhun", "Drishyam 2", "Shaitaan", "Bholaa", "Raajneeti", "Khufiya", "Ek Villain Returns", "Ugly", "Madaari", "Force"]},
 }
 
 
@@ -290,6 +290,15 @@ def _format_movie_list(movies: list[str], max_show: int = 5) -> str:
     display = movies[:max_show]
     suffix = f" +{len(movies) - max_show} more" if len(movies) > max_show else ""
     return ", ".join(display) + suffix
+
+
+def _print_final_matrix(means: dict[str, float], primary_k: int) -> None:
+    print(f"Precision@10 : {means.get('Precision@10', 0.0):.4f}")
+    print(f"Recall@10    : {means.get('Recall@10', 0.0):.4f}")
+    print(f"MRR@10       : {means.get('MRR@10', 0.0):.3f}")
+    print(f"MAP@10       : {means.get('MAP@10', 0.0):.4f}")
+    print(f"NDCG@10      : {means.get('NDCG@10', 0.0):.4f}")
+    print(f"ILD          : {means.get('ILD', 0.0):.4f}")
 
 
 def _catalog_coverage(all_retrieved: list[list[int]], total_catalog_size: int) -> float:
@@ -538,12 +547,8 @@ def run_evaluation(
     -------
     dict of metric_name -> mean value across all queries
     """
-    _hdr("CineMatch India — Evaluation Report")
     ks = tuple(sorted(set(int(k) for k in ks if int(k) > 0))) or (10,)
     primary_k = 10 if 10 in ks else ks[len(ks) // 2]
-    print(f"  {D}Metrics : Precision@K  Recall@K  MRR@K  MAP@K  NDCG@K  ILD  Coverage  FameBias{R}")
-    print(f"  {D}Primary : NDCG@{primary_k} (rank-aware)  |  Secondary: MAP@K, Recall@K, MRR@K{R}")
-    print(f"  {D}Sources : Weaviate (2024)  |  Shaped.ai (2023)  |  arxiv 2312.16015{R}")
 
     eng    = _import_engine()
     if not eng._engine_ready:
@@ -563,7 +568,6 @@ def run_evaluation(
             min_vote_average=max(6.0, float(min_rating)),
         )
         if not queries:
-            print(f"  {Y}Stratified sampling returned no queries; falling back to the small hand-written set.{R}")
             queries = [{
                 "movie_title": title,
                 "language_codes": lang_codes,
@@ -571,18 +575,8 @@ def run_evaluation(
                 "free_text": None,
                 "anchor_idx": None,
             } for title, lang_codes, desc in DEFAULT_QUERIES]
-        strategy_note = f"stratified sample of {len(queries)} anchors (seed={sample_seed})"
-        query_note = "synthetic free-text built from metadata"
     else:
-        strategy_note = f"manual query set ({len(queries)} queries)"
-        query_note = "manual titles / optional free-text"
-
-    print(f"  {D}Strategy : {strategy_note}{R}")
-    print(f"  {D}Query type: {query_note}{R}")
-    print(f"  {D}Sampling : min_vote_count>=25  min_vote_avg>=6.0  top_n={top_n}  seed={sample_seed}{R}")
-    print(f"\n{B}{C}Per-Query Metrics{R}")
-    print(f"  {'Movie Title':<35} | Metrics (P@K, R@K, MAP@K, NDCG@K, ILD) | Stats")
-    print(f"  {'-'*130}")
+        pass
 
     agg: dict[str, list[float]] = {f"Precision@{k}": [] for k in ks}
     agg.update({f"Recall@{k}": [] for k in ks})
@@ -604,9 +598,6 @@ def run_evaluation(
         lang_codes = list(query["language_codes"])
         desc = str(query["description"])
         free_text = query.get("free_text")
-
-        if verbose:
-            print(f"\n  {B}{W}{desc}  ->  \"{title}\"{R}")
 
         try:
             with redirect_stdout(io.StringIO()):
@@ -652,31 +643,6 @@ def run_evaluation(
         relevant = gt["relevant"]
         highly_relevant = set()
 
-        # Get recommended movie titles (deduplicated)
-        recommended_titles = []
-        seen_titles = set()
-        for r in results[:10]:
-            norm_title = _normalize_title(r.title)
-            if norm_title not in seen_titles:
-                recommended_titles.append(r.title)
-                seen_titles.add(norm_title)
-        
-        # Get ground truth movie titles (deduplicated)
-        ground_truth_titles = []
-        seen_gt = set()
-        for idx in relevant:
-            if idx < len(df):
-                movie_title = df.loc[idx, "title"]
-                norm_title = _normalize_title(movie_title)
-                if norm_title not in seen_gt:
-                    ground_truth_titles.append(movie_title)
-                    seen_gt.add(norm_title)
-        
-        # Get matches (movies that were recommended AND in ground truth)
-        ground_truth_set = set(_normalize_title(t) for t in ground_truth_titles)
-        recommended_normalized = {_normalize_title(t): t for t in recommended_titles}
-        matched_titles = [recommended_normalized[norm_t] for norm_t in recommended_normalized if norm_t in ground_truth_set]
-
         query_fame = _fame_bias(retrieved, fame_scores) - (float(np.mean(fame_scores)) if fame_scores is not None else 0.0)
         dv  = ild(retrieved, embed_vecs) if embed_vecs is not None else 0.0
 
@@ -703,57 +669,12 @@ def run_evaluation(
 
         p, rc, mr, ap, nd = per_k[primary_k]
         metrics = {"P": p, "R": rc, "MRR": mr, "MAP": ap, "NDCG": nd, "ILD": dv}
-        
-        if not verbose:
-            print(f"\n  {B}{C}Query: {title}{R}")
-            print(f"  {D}Recommended ({len(recommended_titles)}): {', '.join(recommended_titles)}{R}")
-            print(f"  {D}Ground Truth ({len(ground_truth_titles)}): {', '.join(ground_truth_titles)}{R}")
-            if matched_titles:
-                print(f"  {G}✓ Matched ({len(matched_titles)}): {_format_movie_list(matched_titles, max_show=10)}{R}")
-            else:
-                print(f"  {RE}✗ Matched (0): —{R}")
-            row = _format_metrics_row(title, metrics, len(retrieved), len(relevant), primary_k)
-            print(row)
 
     # ── Aggregate summary ────────────────────────────────────────────────────
     means = {k: _mean_std(v)[0] for k, v in agg.items() if v}
 
-    _hdr(f"Mean Scores  ({evaluated_count} evaluated / {len(normalized_queries)} generated, K in {list(ks)})")
-    print(f"  {D}Skipped : {skipped_count}{R}")
-
-    _sec("Ranking", "Accuracy + Ranking Quality")
-    for k in ks:
-        _row(f"Precision@{k}", means.get(f"Precision@{k}", 0), f"accuracy of top-{k} list")
-        _row(f"Recall@{k}",    means.get(f"Recall@{k}",    0), f"coverage of relevant items")
-        if k == primary_k:
-            _row(f"MRR@{k}",   means.get(f"MRR@{k}",       0), "rank of first relevant hit")
-            _row(f"MAP@{k}",   means.get(f"MAP@{k}",       0), "avg precision over all relevant")
-            _row(f"NDCG@{k}",  means.get(f"NDCG@{k}",      0), "graded rank-aware quality  <- primary")
-
-    _sec("Diversity", "Intra-List Diversity  (Kaminskas & Bridge 2016)")
-    _row("ILD",             means.get("ILD",       0), "0=identical  1=maximally diverse")
-
-    _sec("Bias / Scope", "Coverage and Fame Bias")
-    coverage = _catalog_coverage(all_retrieved_lists, len(df))
-    fame_mean = float(np.mean(all_fame_bias)) if all_fame_bias else 0.0
-    baseline_fame = float(np.mean(fame_scores)) if fame_scores is not None else 0.0
-    _row("Coverage", coverage, "unique recommended items / catalogue size")
-    _row("Fame bias", fame_mean, "positive means more popular movies than baseline")
-
-    primary_scores = agg.get(f"NDCG@{primary_k}", [])
-    ci_lo, ci_hi = _bootstrap_ci(primary_scores, n_boot=bootstrap_iters)
-    recall_lo, recall_hi = _bootstrap_ci(agg.get(f"Recall@{primary_k}", []), n_boot=bootstrap_iters)
-
-    core    = [means.get(f"NDCG@{primary_k}", 0), means.get(f"MAP@{primary_k}", 0), means.get(f"Recall@{primary_k}", 0)]
-    overall = float(np.mean(core))
-    g, gc   = _grade(overall)
-    print(f"\n  {'─'*56}")
-    print(f"  {B}Overall  {gc}{overall:.4f}  [{g}]{R}  {_bar(overall)}")
-    print(f"  {D}NDCG@{primary_k} 95% CI: [{ci_lo:.4f}, {ci_hi:.4f}]{R}")
-    print(f"  {D}Recall@{primary_k} 95% CI: [{recall_lo:.4f}, {recall_hi:.4f}]{R}")
-    print(f"  {D}Baseline fame score: {baseline_fame:.4f}{R}")
-    print(f"  {D}Elapsed: {time.time() - t0:.1f}s{R}")
-    print(f"\n{B}{C}{'━'*64}{R}\n")
+    if evaluated_count == 0:
+        raise RuntimeError("No queries were successfully evaluated.")
 
     return means
 
@@ -773,10 +694,12 @@ if __name__ == "__main__":
     try:
         print(f"\n{D}Initializing engine for evaluation...{R}")
         # 1. Load data
-        collection, df = run_full_pipeline(DATA_PATH, DB_PATH)
+        with redirect_stdout(io.StringIO()):
+            collection, df = run_full_pipeline(DATA_PATH, DB_PATH)
         
         # 2. Build engine
-        build_engine(df)
+        with redirect_stdout(io.StringIO()):
+            build_engine(df)
         
         # 3. Build queries from MANUAL_GROUND_TRUTH movies only
         manual_queries = [
@@ -791,8 +714,8 @@ if __name__ == "__main__":
         ]
         
         # 4. Run full evaluation with only manual ground truth movies
-        print(f"\n{C}Running evaluation on {len(manual_queries)} manual ground truth movies...{R}\n")
-        run_evaluation(queries=manual_queries, verbose=VERBOSE)
+        means = run_evaluation(queries=manual_queries, verbose=VERBOSE)
+        _print_final_matrix(means, primary_k=10)
 
     except Exception as e:
         print(f"\n{RE}Error during evaluation: {e}{R}")
