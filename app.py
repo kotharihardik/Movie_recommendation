@@ -39,7 +39,7 @@ from ui_components     import (
 
 DATA_PATH = os.environ.get("MOVIES_CSV",    "data/movies.csv")
 DB_PATH   = os.environ.get("CHROMA_DB_PATH","./chroma_db")
-DEFAULT_GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or "AIzaSyC9ECyyZszSq7r9JRvOdMcakx74yimd6nk"
+DEFAULT_GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or "AIzaSyDbHXgQjD5Z002qRFLoo-GESrTDpUs-W-g"
 
 
 # ── Cached startup ────────────────────────────────────────────────────────────
