@@ -143,7 +143,7 @@ Evaluated on 11 manually curated queries:
 
 **Query A — Free text:** *"Intense survival-action movie with relentless enemies and nonstop tension"*
 
-Results: Gangs of Wasseypur Pt.2 · Pt.1 · An Action Hero · Jawan · Don 2 · Animal · Sonchiriya · Shagird · (cont.) · (cont.)
+Results: Gangs of Wasseypur Pt.2 · Pt.1 · An Action Hero · Jawan · Don 2 · Animal · Sonchiriya · Shagird
 
 The GoW pair ranks 1–2 (Crime+Action+Thriller, "relentless rivalries" and "nonstop tension" directly in overviews). Don 2 and Animal match via cast/plot Jaccard. Sonchiriya matches "survival" motif via overview token overlap.
 
