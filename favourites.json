@@ -154,28 +154,77 @@
     "overview": "Following the events of Tiger Zinda Hai, War, and Pathaan, Avinash Singh Rathore returns as Tiger but this time the battle is within. He has to choose between his country or family as an old enemy is after his life, who claims that his family was killed by Tiger. He holds Tiger captive in Pakistan a"
   },
   {
-    "movie_id": "41109",
-    "title": "Don 2",
-    "original_title": "Don 2",
+    "movie_id": "20494",
+    "title": "Malamaal Weekly",
+    "original_title": "मालामाल वीकली",
     "language": "hi",
-    "year": 2011,
-    "vote_average": 6.948,
-    "vote_count": 260,
-    "director": "Farhan Akhtar",
+    "year": 2006,
+    "vote_average": 6.32,
+    "vote_count": 61,
+    "director": "Priyadarshan",
     "cast": [
-      "Shah Rukh Khan",
-      "Priyanka Chopra Jonas",
-      "Boman Irani",
-      "Kunal Kapoor",
-      "Lara Dutta"
+      "Paresh Rawal",
+      "Om Puri",
+      "Riteish Deshmukh",
+      "Reema Sen",
+      "Rajpal Yadav"
     ],
     "genres": [
-      "Action",
-      "Thriller"
+      "Comedy",
+      "Crime"
     ],
-    "poster_path": "/2gBM8c36HIwn4vc2UuMeliqiCKY.jpg",
-    "tagline": "The Chase Continues",
-    "runtime": 139,
-    "overview": "Having conquered the Asian underworld, crime boss Don sets in motion a plan that will give him dominion over Europe."
+    "poster_path": "/kGYn1rK0XBciKqnGHtLSnzJw6Gf.jpg",
+    "tagline": "",
+    "runtime": 138,
+    "overview": "After one of his customers dies from the shock of winning a lottery, lottery ticket seller Lilaram hatches a plan to have that money all for himself. But others from the village have also got their eyes on the money."
+  },
+  {
+    "movie_id": "20359",
+    "title": "Phir Hera Pheri",
+    "original_title": "Phir Hera Pheri",
+    "language": "hi",
+    "year": 2006,
+    "vote_average": 6.854,
+    "vote_count": 144,
+    "director": "Neeraj Vora",
+    "cast": [
+      "Akshay Kumar",
+      "Suniel Shetty",
+      "Paresh Rawal",
+      "Bipasha Basu",
+      "Rimi Sen"
+    ],
+    "genres": [
+      "Comedy"
+    ],
+    "poster_path": "/c1Mvyd983ZyrU5Vf2aKEe6WncSq.jpg",
+    "tagline": "",
+    "runtime": 155,
+    "overview": "Raju,  Shyam and Baburao are living happily after having risen from rags to riches. However, they lose it all after falling victim to a chit fund scam due to their greed for more money. Soon, they find themselves in new mess and encounter eccentric and dangerous characters in their quest for a short"
+  },
+  {
+    "movie_id": "20453",
+    "title": "3 Idiots",
+    "original_title": "3 Idiots",
+    "language": "hi",
+    "year": 2009,
+    "vote_average": 7.996,
+    "vote_count": 2676,
+    "director": "Rajkumar Hirani",
+    "cast": [
+      "Aamir Khan",
+      "R. Madhavan",
+      "Sharman Joshi",
+      "Kareena Kapoor Khan",
+      "Boman Irani"
+    ],
+    "genres": [
+      "Drama",
+      "Comedy"
+    ],
+    "poster_path": "/66A9MqXOyVFCssoloscw79z8Tew.jpg",
+    "tagline": "Aal Izz Well!",
+    "runtime": 171,
+    "overview": "Rascal. Joker. Dreamer. Genius... You've never met a college student quite like \"Rancho.\" From the moment he arrives at India's most prestigious university, Rancho's outlandish schemes turn the campus upside down—along with the lives of his two newfound best friends. Together, they make life miserab"
   }
 ]

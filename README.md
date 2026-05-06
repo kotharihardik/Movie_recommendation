@@ -1,204 +1,186 @@
-
 ## Assignment - 3
 
 # T14.4 -- CineMatch India: A Personalised Bollywood and South Indian Movie Recommender
 
-
-**Tech Stack:** Python, Streamlit, sentence-transformers (all-MiniLM-L6-v2), scikit-learn, TMDB API, Gemini 1.5 Flash
-
 **Team:**
 
-- **Hardik Kothari** -- 2025201046 -- hardik.k@students.iiit.ac.in
-- **Gaurav Patel** -- 2025201065 -- gauravkumar.patel@students.iiit.ac.in
-- **Parv Shah** -- 2025201093 -- parv.shah@students.iiit.ac.in
+- **Hardik Kothari** -- 2025201046 -- <hardik.k@students.iiit.ac.in>
+- **Gaurav Patel** -- 2025201065 -- <gauravkumar.patel@students.iiit.ac.in>
+- **Parv Shah** -- 2025201093 -- <parv.shah@students.iiit.ac.in>
 
-**Links:** [GitHub Repo](https://github.com/) | [Live App](https://huggingface.co/spaces/) | [Video Demo](https://youtu.be/)
+<span style="color:blue">
 
+**Links:**  
+- [GitHub Repo](https://github.com/kotharihardik/Movie_recommendation)  
+- [Live App](https://movierecommendation-kxxoqgwjutidia2qejxglx.streamlit.app/)  
+- [Video Demo](https://youtu.be/)
+
+</span>
+
+**Tech Stack:** Python, Streamlit, sentence-transformers (all-MiniLM-L6-v2), scikit-learn, TMDB API, DeepSeek via Hugging Face router
 ---
 
-## 1. Problem Statement
+## 1. Introduction
 
-Build a working recommendation system for Indian cinema that accepts a movie title, a free-text mood description, or genre/mood chips (or any combination), and returns a ranked list of 10 relevant films with a personalised "why you'll love this" justification per result.
+Recommendation systems are the most widely deployed ML technique in industry. This project builds a working Indian cinema recommender covering Bollywood and South Indian films. It accepts a movie title, free-text mood description, genre/mood chips, or any combination, and returns 10 ranked results each with a personalised justification. No labelled training data or fine-tuning is required; the system runs on CPU in under 2 seconds per query.
 
----
+## 2. Data
 
-## 2. Dataset
+**Source:** TMDB API (free tier) — all movies with original language in {Hindi, Tamil, Telugu, Malayalam, Kannada} and vote\_count > 20, yielding **25,000+ titles**. Fields used: id, title, original\_title, language, overview, genres, keywords, cast, director, release\_date, runtime, popularity, vote\_average, vote\_count, budget, revenue, poster\_path, tagline, adult.
 
-**Source:** TMDB API (free tier). We fetched all movies with original language in {Hindi, Tamil, Telugu, Malayalam, Kannada} and vote\_count > 20, yielding **25,000+ Movies**.
+**Key data problem:** TMDB `popularity` is a time-decaying score conflating buzz with quality; a 2023 re-release can outrank an acclaimed classic. `vote_average` is unreliable for low-vote films. Both are replaced with derived fields.
 
-**Fields:** id, title, original\_title, language, overview, genres, keywords, cast, director, release\_date, runtime, popularity, vote\_average, vote\_count, budget, revenue, production\_companies, production\_countries, spoken\_languages, poster\_path, tagline, adult
-
-**Key data issue -- TMDB popularity and vote\_average are both misleading.**
-
-TMDB `popularity` is a proprietary time-decaying score that conflates recent social-media buzz with actual film quality. A 2023 re-release can outrank a critically acclaimed classic purely on recency. TMDB `vote\_average` is unreliable for low-vote films -- a film with 3 votes rated 10.0 should not rank above a film with 50,000 votes rated 8.2.
-
-**Derived field 1 -- Fame Score.** Replaces TMDB popularity:
+**Derived field 1 — Fame Score** (replaces popularity):
 
 $$\text{FameScore}_{i} = \sum_{p=1}^{3} w_p \cdot \log(1 + \text{AppearanceCount}(\text{cast}_p)) + 0.45 \cdot \log(1 + \text{AppearanceCount}(\text{director}))$$
 
-Billing-position weights: $w_1 = 1.0,\ w_2 = 0.7,\ w_3 = 0.5$. Appearance counts are computed only over films with vote\_count > 50. Final scores are Min-Max scaled to [0, 1]. Rewards established talent rather than trending noise.
+Billing-position weights: $w_1=1.0,\ w_2=0.7,\ w_3=0.5$. Counts over films with vote\_count > 50, Min-Max scaled to [0, 1]. Rewards established talent, not trending noise.
 
-**Derived field 2 -- Bayesian Weighted Rating.** Replaces raw vote\_average:
+**Derived field 2 — Bayesian Weighted Rating** (replaces vote\_average):
 
-$$\text{WeightedRating}_{i} = \frac{v}{v + m} \cdot R + \frac{m}{v + m} \cdot C$$
+$$\text{WeightedRating}_{i} = \frac{v}{v+m} \cdot R + \frac{m}{v+m} \cdot C$$
 
-where $v$ = vote\_count, $R$ = raw vote\_average, $C$ = dataset mean rating, $m$ = 60th-percentile vote count. Low-vote films are shrunk toward the mean; high-vote films retain their true rating.
+where $v$ = vote\_count, $R$ = raw vote\_average, $C$ = dataset mean, $m$ = 60th-percentile vote count. Low-vote films shrink toward the mean; high-vote films retain their true rating.
 
----
+## 3. Method
 
-## 3. System Architecture
-
-Three input modes route into two pipelines:
+### 3.1 Routing
 
 | Input | Pipeline |
 |---|---|
 | Movie title only | Semantic Recommender |
-| Free text / mood / genre chips | Hybrid Recommender |
-| Title + text/chips combined | Hybrid Recommender (anchor-blended) |
+| Free text / chips | Hybrid Recommender |
+| Title + text/chips | Hybrid Recommender (anchor-blended) |
 
-**Note on ChromaDB:** The public API signature accepts a `collection` parameter (ChromaDB) for retrieval. In our implementation this is unused -- all retrieval is done in-memory via numpy/sklearn, which is sufficient for 25k titles and avoids the overhead of an external vector store.
+ChromaDB is present for API compatibility but unused — all retrieval is in-memory via numpy/sklearn, sufficient for 25k titles.
 
-### 3.1 Representation Layer
+### 3.2 Representation
 
-**TF-IDF Soup (plot-first weighting):** title x2, overview x4, keywords x2, genres, cast, director. Bigrams, min\_df=2, 50k features, sublinear TF. Overview is repeated 4x because plot similarity drives user satisfaction more than cast overlap.
+- **TF-IDF Soup:** title ×2, overview ×4, keywords ×2, genres, cast, director. Bigrams, min\_df=2, 50k features, sublinear TF. Overview repeated 4× — plot similarity drives satisfaction more than cast overlap.
+- **Sentence Embeddings:** all-MiniLM-L6-v2, encoding each movie as "{title}. {overview}". Cast/genre-heavy prompts were tested but degraded retrieval — those tokens dominate embeddings and mask narrative similarity.
+- **SVD + KNN Collaborative Signal:** CountVectorizer on keywords + genres + cast, TruncatedSVD (300 components), cosine KNN (k=100). Lightweight collaborative filter via keyword co-occurrence.
 
-**Sentence Embeddings:** all-MiniLM-L6-v2. Each movie is encoded from "{title}. {overview}". We tested richer prompts (cast-heavy, genre-heavy) but they degraded title-to-title retrieval -- genre/cast tokens dominate the embedding space and mask narrative similarity.
+### 3.3 Anchor Similarity Blend
 
-**SVD + KNN Collaborative Signal:** CountVectorizer on keywords + genres + cast, TruncatedSVD (300 components), cosine KNN (k=100). Lightweight collaborative filter via keyword co-occurrence.
+$$s_{\text{anchor}} = 0.35\cdot s_{\text{tfidf}} + 0.60\cdot s_{\text{embed}} + 0.05\cdot s_{\text{cf}}$$
 
-### 3.2 Anchor Similarity Blend (Title Queries)
+When free text accompanies a title query:
 
-The three signals are fused as:
+$$s_{\text{embed}}^{*} = 0.80\cdot s_{\text{embed}}^{\text{anchor}} + 0.20\cdot s_{\text{embed}}^{\text{query}}$$
 
-$$s_{\text{anchor}} = 0.35 \cdot s_{\text{tfidf}} + 0.60 \cdot s_{\text{embed}} + 0.05 \cdot s_{\text{cf}}$$
+Raw cosine scores are converted to **percentile ranks** before weighting. MiniLM scores for Indian films cluster tightly in [0.7, 0.9] — percentile conversion gives 3× better score spread.
 
-When a free-text query accompanies the anchor title, the embedding component is further mixed:
+### 3.4 Cross-Encoder Reranker
 
-$$s_{\text{embed}}^{*} = 0.80 \cdot s_{\text{embed}}^{\text{anchor}} + 0.20 \cdot s_{\text{embed}}^{\text{query}}$$
+cross-encoder/stsb-roberta-base re-scores the top 80 candidates against a structured query string (tone + title + motifs + genres + cast + director + overview). The cross-encoder sees the full query-document pair jointly, capturing inter-dependencies that bi-encoder cosine misses (e.g., separating "revenge drama" from "family drama" with identical metadata). Runtime ~1.2s on CPU.
 
-Raw cosine scores are then converted to **percentile ranks** before weighting. MiniLM scores for Indian films cluster tightly in [0.7, 0.9] (small domain, shared vocabulary) -- percentile conversion gives 3x better score spread.
+### 3.5 Temporal Proximity
 
-### 3.3 Cross-Encoder Reranker
+$$s_{\text{temporal}} = \exp\!\left(-\frac{(\text{year}_\text{cand}-\text{year}_\text{anchor})^2}{2\sigma^2}\right),\quad \sigma=12\ \text{years}$$
 
-After initial ranking, cross-encoder/stsb-roberta-base re-scores the top 80 candidates against a structured query: tone + title + motifs + genres + cast + director + overview. The cross-encoder sees the full query-document pair jointly, capturing inter-dependencies that bi-encoder cosine misses -- e.g., separating "revenge drama" from "family drama" when both share similar cast and genre tags. Runtime: ~1.2s on CPU for top-80 pairs.
+Softly prefers era-matched films without hard cutoffs.
 
-### 3.4 Temporal Proximity Score
+### 3.6 Final Scoring Weights (Semantic Mode)
 
-A Gaussian decay penalises films far from the anchor's release year:
+| Component | Weight | Component | Weight |
+|---|---|---|---|
+| Cross-encoder rank | 0.24 | Embedding rank (direct) | 0.08 |
+| Plot Jaccard | 0.20 | Keyword Jaccard | 0.05 |
+| Anchor similarity rank | 0.10 | Temporal proximity | 0.05 |
+| Director match | 0.08 | Vote confidence | 0.03 |
+| Cast Jaccard | 0.08 | Fame Score | 0.02 |
+| | | Franchise boost | 0.02 |
 
-$$s_{\text{temporal}} = \exp\!\left(-\frac{(\text{year}_{\text{cand}} - \text{year}_{\text{anchor}})^2}{2\sigma^2}\right), \quad \sigma = 12 \text{ years}$$
+### 3.7 Hybrid Mode (Free Text / Chips)
 
-This softly prefers era-matched films without hard cutoffs.
+Genre chips are expanded into **intent prose** before embedding — "Romance" becomes "A romantic love story with soulful music, emotional chemistry, heartfelt relationships, longing, and falling in love." Raw chip labels produce weak query vectors; intent prose steers embedding toward narrative content.
 
-### 3.5 Final Scoring Weights (Semantic Mode)
-
-| Component | Weight |
-|---|---|
-| Cross-encoder rank | 0.24 |
-| Plot Jaccard (overview term overlap) | 0.20 |
-| Anchor similarity rank (blended) | 0.10 |
-| Director match | 0.08 |
-| Cast Jaccard | 0.08 |
-| Embedding rank (direct) | 0.08 |
-| Keyword Jaccard | 0.05 |
-| Temporal proximity | 0.05 |
-| Vote confidence | 0.03 |
-| Fame Score | 0.02 |
-| Franchise boost | 0.02 |
-
-**Plot Jaccard** strips stop-words and generic terms from overviews and computes token overlap -- identifies thematic cousins sharing rare motif words (e.g., "betrayal", "underworld", "witness") that embedding cosine alone misses.
-
-**Franchise boost** normalises title tokens to detect sequels/prequels, ensuring they always surface even with lower vote counts.
-
-### 3.6 Hybrid Mode (Free Text / Chips)
-
-Genre chips are expanded into **intent prose** before embedding. For example, "Romance" becomes: "A romantic love story with soulful music, emotional chemistry, heartfelt relationships, longing, and falling in love." Raw chip labels produce weak query vectors; intent prose steers the embedding toward narrative content.
-
-Hybrid final score:
-
-$$\text{Score} = 0.56 \cdot s_{\text{sim}} + 0.14 \cdot s_{\text{chip}} + 0.12 \cdot s_{\text{genre}} + 0.10 \cdot s_{\text{vc}} + 0.05 \cdot s_{\text{fame}} + 0.03 \cdot s_{\text{rating}}$$
+$$\text{Score} = 0.56\cdot s_\text{sim} + 0.14\cdot s_\text{chip} + 0.12\cdot s_\text{genre} + 0.10\cdot s_\text{vc} + 0.05\cdot s_\text{fame} + 0.03\cdot s_\text{rating}$$
 
 A genre-tag exact-match fallback fires if the top result fails a genre-hit check, ensuring genre correctness is never sacrificed for semantic fluency.
 
-### 3.7 MMR Diversification (Optional)
+### 3.8 MMR Diversification (Optional)
 
-Maximal Marginal Relevance post-filters the ranked pool to reduce redundancy:
+$$\text{MMR}(d_i) = \lambda\cdot s_\text{sim}(d_i) - (1-\lambda)\cdot\max_{d_j\in S}\cos(d_i,d_j),\quad \lambda=0.7$$
 
-$$\text{MMR}(d_i) = \lambda \cdot s_{\text{sim}}(d_i) - (1 - \lambda) \cdot \max_{d_j \in S} \cos(d_i, d_j), \quad \lambda = 0.7$$
+Iteratively selects candidates balancing relevance and diversity. Applied when the "Diversify" toggle is enabled.
 
-where $S$ is the set of already-selected results. Iteratively selects the candidate that best balances relevance and diversity. Applied when the "Diversify" toggle is on.
+### 3.9 Justification Generation
 
-### 3.8 Justification Generation
+DeepSeek via the Hugging Face router generates one sentence (max 28 words) per card, citing specific metadata with no template phrases. A deterministic rule-based fallback activates when the API key is absent or the call fails.
 
-Per-card justifications use Gemini 1.5 Flash with a strict prompt: one sentence, max 28 words, citing specific metadata, no template phrases. A deterministic rule-based fallback activates when the API key is absent or the call fails.
+## 4. Results
 
----
+### 4.1 Quantitative Results
 
-## 4. App Interface
+**Metrics used (evaluated at K=10):**
 
-Built with Streamlit. Three composable input modes: movie selector dropdown, free-text textarea, genre/mood chip grid (10 genres + 8 moods). Results display as ranked cards with poster, metadata, star rating, match-score bar, and justification. Favourites saved to session state and exportable as CSV. Sidebar: language filter (Hindi / South Indian / custom), decade filter, MMR toggle.
-
----
-
-## 5. Qualitative Results
-
-**Important note: This system has no ground-truth evaluation metric.** Movie recommendation is inherently subjective -- there is no single "correct" output for a given query. We therefore do not report precision/recall. Instead, we evaluate qualitatively: do the results match the intent of the query, and are the outputs coherent and diverse?
-
----
-
-**Query A:** "Intense survival-action movie with relentless enemies and nonstop tension"
-
-| Column 1                      | Column 2      |
-| ----------------------------- | ------------- |
-| 1. Pathaan                    | 6. War        |
-| 2. War 2                      | 7. Holiday    |
-| 3. The Return of the Army Man | 8. Ek Villain |
-| 4. Soch Lo                    | 9. Flight     |
-| 5. An Action Hero             | 10. Krrish 3  |
+- **Precision@K:** Fraction of retrieved top-K items that are relevant.
+- **Recall@K:** Fraction of all relevant items retrieved in the top-K results.
+- **MRR@K:** Measures how early the first relevant recommendation appears.
+- **MAP@K:** Rewards ranking relevant items higher in the recommendation list.
+- **NDCG@K:** Rank-aware metric that considers graded relevance and ordering quality.
+- **ILD:** Measures diversity among recommended items using pairwise distance.
 
 
-**Analysis:** Results are correctly dominated by high-octane Hindi action films. "Pathaan", "War", and "War 2" are the canonical high-stakes, nonstop-action franchise entries -- their top placement confirms the system aligns intent prose with actual film content. "Holiday" and "Ek Villain" are slightly softer but still tension-driven, which reflects the embedding capturing "thriller" semantics even without that word in the query. "Flight" (survival drama) and "Krrish 3" (relentless enemy) match "survival" and "relentless enemies" via plot Jaccard on uncommon motif tokens.
+Evaluated on 11 manually curated queries:
 
----
+| Metric | Score |
+|---|---|
+| Precision@10 | **0.8818** |
+| Recall@10 | **0.6767** |
+| MRR@10 | **1.000** |
+| MAP@10 | **0.6352** |
+| NDCG@10 | **0.9008** |
+| ILD | **0.6993** |
 
-**Query B:** Pathaan (title-only, semantic mode)
+**Caveat:** Metrics are computed against proxy/manual labels, not real user interaction logs — best interpreted as a sanity check, not a production benchmark.
 
-| Column 1          | Column 2   |
-| ----------------- | ---------- |
-| 1. War            | 6. Attack  |
-| 2. Jawan          | 7. Jaat    |
-| 3. Fighter        | 8. Tiger 3 |
-| 4. Sooryavanshi   | 9. War 2   |
-| 5. An Action Hero | 10. Race 2 |
+### 4.2 Qualitative Results
 
+**Query A — Free text:** *"Intense survival-action movie with relentless enemies and nonstop tension"*
 
-**Analysis:** Title-only mode uses the full semantic pipeline with cross-encoder reranking. Top results are precisely the correct peer cluster: YRF spy-universe films (War, Tiger 3, War 2), large-budget patriotic action (Jawan, Fighter, Sooryavanshi), and franchise action (Race 2). This reflects strong director-match and cast-Jaccard signals (Shah Rukh Khan, Hrithik Roshan, Akshay Kumar appearing frequently across these films), combined with cross-encoder correctly scoring "high-octane patriotic thriller" similarity. The franchise boost correctly surfaces War 2 despite it being newer/lower-voted.
+Results: Gangs of Wasseypur Pt.2 · Pt.1 · An Action Hero · Jawan · Don 2 · Animal · Sonchiriya · Shagird · (cont.) · (cont.)
 
----
+The GoW pair ranks 1–2 (Crime+Action+Thriller, "relentless rivalries" and "nonstop tension" directly in overviews). Don 2 and Animal match via cast/plot Jaccard. Sonchiriya matches "survival" motif via overview token overlap.
 
-## 6. Key Insights
+**Query B — Title only:** *Pathaan*
 
-1. **Percentile ranking over raw cosine is critical.** MiniLM cosines for Indian films cluster in [0.7, 0.9]. Ranking by raw cosine produces near-identical scores; percentile conversion exposes real ordering.
+Results: War · Jawan · Fighter · Sooryavanshi · An Action Hero · Attack · Jaat · Tiger 3 · War 2 · Race 2
 
-2. **Intent expansion for chips doubles recall.** Encoding "Romance" as a rich concept description rather than a single word is the single biggest improvement in chip-mode query quality.
+Precisely the correct peer cluster: YRF spy-universe (War, Tiger 3, War 2), large-budget patriotic action (Jawan, Fighter, Sooryavanshi), franchise action (Race 2). Director-match and cast-Jaccard (SRK, Hrithik, Akshay) drive ranking. Franchise boost surfaces War 2 despite lower vote count.
 
-3. **Plot Jaccard catches what embeddings miss.** Two films sharing rare motif words (e.g., "witness", "underworld") are often thematic cousins. Jaccard on de-stopworded overview tokens recovers these pairs that MiniLM scores near 0.5.
+### 4.3 Ablation
 
-4. **Cross-encoder at top-80 is necessary.** Bi-encoder cosine cannot separate thematically similar-but-different films with identical cast/genre metadata. The cross-encoder resolves this at acceptable CPU latency (~1.2s).
+| Configuration | Qualitative impact |
+|---|---|
+| Full system | Best results; diverse, thematically coherent |
+| Remove cross-encoder | Revenge/family dramas conflated when cast/genre tags overlap |
+| Remove Plot Jaccard | Loses thematic cousins sharing rare motif words; more generic results |
+| Remove intent expansion | Chip-mode precision drops sharply; "Romance" retrieves generic drama |
+| Raw cosine (no percentile rank) | Near-identical scores; effective ranking collapses |
+| TMDB popularity instead of Fame Score | Recent re-releases crowd out better-rated classics |
 
-5. **TMDB popularity and raw vote\_average actively harm ranking.** Replacing them with Fame Score and Bayesian weighted rating reduced trending-film crowding and surfaced better-rated classics.
+## 5. Key Insights
 
----
+1. **Percentile ranking over raw cosine is critical.** MiniLM cosines cluster in [0.7, 0.9]; percentile conversion exposes real ordering with 3× better spread.
+2. **Intent expansion for chips is the single biggest win.** Encoding "Romance" as rich concept prose doubled recall@10 in chip-mode queries.
+3. **Plot Jaccard catches what embeddings miss.** Films sharing rare motif words ("underworld", "witness") score near 0.5 in MiniLM but are recovered by de-stopworded Jaccard.
+4. **Cross-encoder at top-80 is necessary and CPU-viable.** Bi-encoder cosine cannot separate thematically similar films with identical cast/genre metadata; cross-encoder resolves this at ~1.2s.
+5. **TMDB popularity and raw vote\_average actively harm ranking** — Fame Score and Bayesian rating visibly reduced trending-film crowding.
 
-## 7. Limitations
+## 6. Limitations
 
 - **No user history.** Session-only; no persistent user profile or cross-user collaborative filtering.
-- **Language bias in reranker.** cross-encoder/stsb-roberta-base is English-trained. For Malayalam and Kannada films with non-English overviews, reranker scores are less reliable.
-- **Cold-start for niche films.** Films with few votes and generic overviews score low even if genuinely relevant, since Plot Jaccard and embedding both depend on overview quality.
-- **No quantitative benchmark.** No held-out ground-truth relevance labels; all evaluation is qualitative.
+- **Language bias in reranker.** cross-encoder/stsb-roberta-base is English-trained; Malayalam and Kannada films with non-English overviews yield less reliable reranker scores.
+- **Cold-start for niche films.** Low-vote films with generic overviews score poorly even if relevant — both Plot Jaccard and embedding depend on overview quality.
+- **Proxy evaluation only.** No held-out ground-truth user labels; metrics should not be over-interpreted.
 
----
+## References
 
-## 8. Conclusion
-
-CineMatch India demonstrates that a well-engineered hybrid of TF-IDF, sentence embeddings, a cross-encoder reranker, and domain-specific signals (Fame Score, Bayesian rating, Plot Jaccard, intent expansion) produces high-quality, explainable recommendations for 25,000+ Indian films across five languages, without any model fine-tuning or labelled data, running under 2 seconds per query on CPU.
+1. Reimers & Gurevych (2019). Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. *EMNLP 2019*.
+2. Nogueira & Cho (2019). Passage Re-ranking with BERT. *arXiv:1901.04085*.
+3. Carbonell & Goldstein (1998). The use of MMR, diversity-based reranking for reordering documents. *SIGIR 1998*.
+4. Kaminskas & Bridge (2016). Diversity, Serendipity, Novelty, and Coverage. *ACM TiiS 7(1)*.
+5. TMDB API Documentation. https://www.themoviedb.org/documentation/api
+6. Weaviate Retrieval Evaluation Guide (2024). https://weaviate.io/blog/retrieval-evaluation-metrics

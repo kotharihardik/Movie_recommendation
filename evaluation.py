@@ -5,9 +5,17 @@ CineMatch India — Evaluation Metrics
 =====================================
 Offline evaluation for submission and TA defense.
 
-This script uses proxy relevance labels because the project does not have
-explicit user interaction logs. The goal is not to claim a production-grade
-benchmark, but to report a transparent and defensible offline evaluation.
+This script supports two evaluation modes:
+
+1. Human-curated benchmark labels for a fixed 15-anchor set.
+2. Proxy relevance labels for sampled anchors when benchmark labels are not
+   available.
+
+The benchmark path is the one to use for reporting quantitative results: each
+anchor movie is paired with 10 manually curated relevant titles, and metrics are
+computed by comparing the system's top-10 recommendations against that ground
+truth. The proxy path remains available for exploratory debugging, but it should
+be presented as an approximation, not as a held-out gold standard.
 
 Primary ranking metric:
     - NDCG@10  (rank-aware, supports graded relevance)
@@ -35,15 +43,9 @@ References:
     arxiv 2312.16015 — Comprehensive Survey of Evaluation Techniques (2024)
     Kaminskas & Bridge, ACM TiiS 7(1), 2016 — diversity metric (ILD)
 
-Practical note:
-        - Because labels are unavailable, relevance is approximated from the movie
-            metadata using genre overlap + keyword/cast/director overlap + vote quality.
-        - This is appropriate for a course submission if you clearly state that
-            the numbers are offline proxy metrics, not ground-truth user satisfaction.
-
 Usage:
     from evaluate_engine import run_evaluation
-    run_evaluation()                                        # default queries
+    run_evaluation()                                        # sampled proxy evaluation
     run_evaluation(queries=[("3 Idiots", ["hi"], "test")]) # custom
 """
 
@@ -115,18 +117,24 @@ def _bootstrap_ci(values: list[float], n_boot: int = 1000, alpha: float = 0.05, 
 # ─── Ground-truth builder ────────────────────────────────────────────────────
 
 MANUAL_GROUND_TRUTH = {
-    "Don": {"relevant": ["Don 2", "Deewaar", "Zanjeer", "Agneepath", "Kaante", "Race", "Dhoom 2", "Ek Villain", "Shootout at Lokhandwala", "Badlapur", "Raajneeti", "D-Day"]},
-    "Sholay": {"relevant": ["Deewaar", "Zanjeer", "Don", "Kaala Patthar", "Trishul", "Muqaddar Ka Sikandar", "Agneepath", "Amar Akbar Anthony", "Coolie", "Ganga Jamuna", "Shaan"]},
+    "Don": {"relevant": ["Don 2", "Deewaar", "Zanjeer", "Agneepath", "Kaante", "Race", "Dhoom 2", "Ek Villain", "Shootout at Lokhandwala", "Badlapur"]},
+    "Sholay": {"relevant": ["Deewaar", "Zanjeer", "Don", "Kaala Patthar", "Trishul", "Muqaddar Ka Sikandar", "Agneepath", "Amar Akbar Anthony", "Coolie", "Satte Pe Satta"]},
     "Hera Pheri": {"relevant": ["Phir Hera Pheri", "Welcome", "Bhool Bhulaiyaa", "Golmaal", "Dhamaal", "Hungama", "Malamaal Weekly", "Chup Chup Ke", "De Dana Dan", "Housefull"]},
-    "Pathaan": {"relevant": ["War", "Tiger Zinda Hai", "Ek Tha Tiger", "Jawan", "Raees", "Bang Bang!", "Don 2", "Race", "Dhoom 2", "Mission Majnu", "Sooryavanshi", "An Action Hero"]},
-    "Heropanti": {"relevant": ["Baaghi", "Baaghi 2", "Baaghi 3", "War", "Student of the Year", "A Flying Jatt", "Singham", "Kick", "Race 3", "Ek Villain", "Khushi", "Marjaavaan"]},
-    "Saiyaara": {"relevant": ["Aashiqui 2", "Ek Villain", "Rockstar", "Kabir Singh", "Malang", "Hamari Adhuri Kahani", "Sanam Teri Kasam", "Half Girlfriend", "Shiddat", "Laila Majnu", "Dil Bechara", "Raanjhanaa"]},
-    "Krrish 3": {"relevant": ["Koi... Mil Gaya", "Krrish", "Ra.One", "Robot", "2.0", "A Flying Jatt", "War", "Dhoom 2", "Eega", "Baahubali: The Beginning", "Mr. X"]},
-    "PK": {"relevant": ["3 Idiots", "OMG: Oh My God!", "Munna Bhai M.B.B.S.", "Lage Raho Munna Bhai", "Taare Zameen Par", "Chhichhore", "Queen", "Hindi Medium", "Bhool Bhulaiyaa", "Dil Chahta Hai", "Zero", "Dunki"]},
-    "OMG: Oh My God!": {"relevant": ["PK", "Munna Bhai M.B.B.S.", "Lage Raho Munna Bhai", "3 Idiots", "Hindi Medium", "Taare Zameen Par", "Chhichhore", "Queen", "Bhool Bhulaiyaa", "Welcome", "Khatta Meetha"]},
-    "Kantara": {"relevant": ["KGF: Chapter 1", "Vikrant Rona", "777 Charlie", "Asuran", "Pushpa: The Rise", "Jai Bhim", "Kaithi", "RRR", "Vikram", "Ugramm", "Vikram Vedha"]},
-    "Drishyam": {"relevant": ["Andhadhun", "Kahaani", "Ratsasan", "Talvar", "Article 15", "Badla", "Special 26", "Ugly", "A Wednesday!", "Vikram Vedha", "Madaari", "Force"]},
+    "Pathaan": {"relevant": ["War", "Tiger Zinda Hai", "Ek Tha Tiger", "Jawan", "Raees", "Bang Bang!", "Don 2", "Race", "Dhoom 2", "Sooryavanshi"]},
+    "Heropanti": {"relevant": ["Baaghi", "Baaghi 2", "Baaghi 3", "War", "A Flying Jatt", "Singham", "Kick", "Race 3", "Ek Villain", "Marjaavaan"]},
+    "Saiyaara": {"relevant": ["Aashiqui 2", "Ek Villain", "Rockstar", "Kabir Singh", "Malang", "Hamari Adhuri Kahani", "Sanam Teri Kasam", "Half Girlfriend", "Shiddat", "Laila Majnu"]},
+    "Krrish 3": {"relevant": ["Koi... Mil Gaya", "Krrish", "Ra.One", "Mr. India", "2.0", "A Flying Jatt", "War", "Dhoom 2", "Eega", "Mr. X"]},
+    "PK": {"relevant": ["3 Idiots", "OMG: Oh My God!", "Munna Bhai M.B.B.S.", "Lage Raho Munna Bhai", "Chhichhore", "Queen", "Hindi Medium", "Bhool Bhulaiyaa", "Dil Chahta Hai", "Dunki"]},
+    "OMG: Oh My God!": {"relevant": ["PK", "Munna Bhai M.B.B.S.", "Lage Raho Munna Bhai", "3 Idiots", "Hindi Medium", "Chhichhore", "Queen", "Bhool Bhulaiyaa", "Welcome", "Jolly LLB"]},
+    "Kantara": {"relevant": ["K.G.F: Chapter 1", "Vikrant Rona", "777 Charlie", "Asuran", "Pushpa: The Rise", "Jai Bhim", "Kaithi", "RRR", "Vikram", "Vikram Vedha"]},
+    "Drishyam": {"relevant": ["Andhadhun", "Kahaani", "Ratsasan", "Talvar", "Article 15", "Badla", "Special 26", "Ugly", "A Wednesday!", "Vikram Vedha"]},
+    "3 Idiots": {"relevant": ["Chhichhore", "PK", "OMG: Oh My God!", "Munna Bhai M.B.B.S.", "Lage Raho Munna Bhai", "Hindi Medium", "Queen", "English Vinglish", "Rocket Singh: Salesman of the Year", "Jolly LLB"]},
+    "Dangal": {"relevant": ["Sultan", "Chak De! India", "Mary Kom", "Bhaag Milkha Bhaag", "Paan Singh Tomar", "Iqbal", "Gold", "83", "Jo Jeeta Wohi Sikandar", "Secret Superstar"]},
+    "Dil Chahta Hai": {"relevant": ["Zindagi Na Milegi Dobara", "Yeh Jawaani Hai Deewani", "Wake Up Sid", "Jaane Tu... Ya Jaane Na", "Lakshya", "Rock On!!", "Tamasha", "Jab We Met", "Dil Dhadakne Do", "Baar Baar Dekho"]},
+    "Kabir Singh": {"relevant": ["Arjun Reddy", "Animal", "Aashiqui 2", "Ek Villain", "Rockstar", "Malang", "Shiddat", "Saiyaara", "Raanjhanaa", "Sanam Teri Kasam"]},
 }
+
+BENCHMARK_TITLES = list(MANUAL_GROUND_TRUTH.keys())
 
 
 def _normalize_title(value) -> str:
@@ -137,18 +145,48 @@ def _manual_ground_truth_to_indices(df: pd.DataFrame, title: str) -> dict:
     manual = MANUAL_GROUND_TRUTH.get(title, {})
     relevant_titles = manual.get("relevant", [])
 
-    title_lookup: dict[str, set[int]] = {}
+    title_lookup: dict[str, int] = {}
     for idx, row in df.iterrows():
         movie_title = _normalize_title(row.get("title", ""))
-        if not movie_title:
+        if not movie_title or movie_title in title_lookup:
             continue
-        title_lookup.setdefault(movie_title, set()).add(idx)
+        title_lookup[movie_title] = int(idx)
 
     relevant: set[int] = set()
     for related_title in relevant_titles:
-        relevant.update(title_lookup.get(_normalize_title(related_title), set()))
+        match = title_lookup.get(_normalize_title(related_title))
+        if match is not None:
+            relevant.add(match)
 
     return {"relevant": relevant, "highly_relevant": set()}
+
+
+def _title_language_codes(df: pd.DataFrame, title: str) -> list[str]:
+    matches = df[df["title"].apply(_normalize_title) == _normalize_title(title)]
+    if matches.empty or "language" not in matches.columns:
+        return []
+    codes = []
+    for code in matches["language"].dropna().astype(str).tolist():
+        cleaned = code.strip()
+        if cleaned and cleaned not in codes:
+            codes.append(cleaned)
+    return codes
+
+
+def _build_manual_benchmark_queries(df: pd.DataFrame, titles: list[str] | None = None) -> list[dict[str, object]]:
+    selected_titles = titles if titles is not None else BENCHMARK_TITLES
+    queries: list[dict[str, object]] = []
+    for title in selected_titles:
+        queries.append(
+            {
+                "movie_title": title,
+                "language_codes": _title_language_codes(df, title),
+                "description": f"Benchmark: {title}",
+                "free_text": None,
+                "anchor_idx": None,
+            }
+        )
+    return queries
 
 
 def _genre_set(val) -> set:
@@ -778,20 +816,11 @@ if __name__ == "__main__":
         # 2. Build engine
         build_engine(df)
         
-        # 3. Build queries from MANUAL_GROUND_TRUTH movies only
-        manual_queries = [
-            {
-                "movie_title": title,
-                "language_codes": ["hi"],  # Assuming Hindi for Indian movies
-                "description": f"Query: {title}",
-                "free_text": None,
-                "anchor_idx": None,
-            }
-            for title in MANUAL_GROUND_TRUTH.keys()
-        ]
-        
-        # 4. Run full evaluation with only manual ground truth movies
-        print(f"\n{C}Running evaluation on {len(manual_queries)} manual ground truth movies...{R}\n")
+        # 3. Build the fixed 15-anchor benchmark from the curated labels above.
+        manual_queries = _build_manual_benchmark_queries(df)
+
+        # 4. Run the benchmark evaluation on the curated ground-truth set.
+        print(f"\n{C}Running evaluation on {len(manual_queries)} curated benchmark movies...{R}\n")
         run_evaluation(queries=manual_queries, verbose=VERBOSE)
 
     except Exception as e:
