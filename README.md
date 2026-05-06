@@ -1,6 +1,6 @@
 ## Assignment - 3
 
-# T14.4 -- CineMatch India: A Personalised Bollywood and South Indian Movie Recommender
+# T14.4 -- Bollywood and South Indian Movie Recommender
 
 **Team:**
 
@@ -13,11 +13,12 @@
 **Links:**  
 - [GitHub Repo](https://github.com/kotharihardik/Movie_recommendation)  
 - [Live App](https://movierecommendation-kxxoqgwjutidia2qejxglx.streamlit.app/)  
-- [Video Demo](https://youtu.be/)
+- [Video Demo](https://www.youtube.com/watch?v=JTca_iBlRQQ)
 
 </span>
 
-**Tech Stack:** Python, Streamlit, sentence-transformers (all-MiniLM-L6-v2), scikit-learn, TMDB API, DeepSeek via Hugging Face router
+**Tech Stack:** 
+Python, Streamlit, sentence-transformers (all-MiniLM-L6-v2), scikit-learn, TMDB API, DeepSeek via Hugging Face router
 ---
 
 ## 1. Introduction
@@ -178,9 +179,9 @@ Precisely the correct peer cluster: YRF spy-universe (War, Tiger 3, War 2), larg
 
 ## References
 
-1. Reimers & Gurevych (2019). Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. *EMNLP 2019*.
-2. Nogueira & Cho (2019). Passage Re-ranking with BERT. *arXiv:1901.04085*.
-3. Carbonell & Goldstein (1998). The use of MMR, diversity-based reranking for reordering documents. *SIGIR 1998*.
-4. Kaminskas & Bridge (2016). Diversity, Serendipity, Novelty, and Coverage. *ACM TiiS 7(1)*.
+1. Reimers & Gurevych (2019). Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. *https://arxiv.org/pdf/1908.10084*.
+2. Nogueira & Cho (2019). Passage Re-ranking with BERT. *https://arxiv.org/pdf/1901.04085*.
+3. Carbonell & Goldstein (1998). The use of MMR, diversity-based reranking for reordering documents. *https://www.cs.cmu.edu/~jgc/publication/The_Use_MMR_Diversity_Based_LTMIR_1998.pdf*.
+4. Kaminskas & Bridge (2016). Diversity, Serendipity, Novelty, and Coverage. *https://www.researchgate.net/publication/311784289_Diversity_Serendipity_Novelty_and_Coverage_A_Survey_and_Empirical_Analysis_of_Beyond-Accuracy_Objectives_in_Recommender_Systems*.
 5. TMDB API Documentation. https://www.themoviedb.org/documentation/api
 6. Weaviate Retrieval Evaluation Guide (2024). https://weaviate.io/blog/retrieval-evaluation-metrics
