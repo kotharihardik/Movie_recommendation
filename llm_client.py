@@ -10,7 +10,10 @@ external calls.
 """
 
 import hashlib
+import json
+import os
 import re
+import time
 from typing import Optional
 
 import requests
@@ -46,11 +49,17 @@ _SYSTEM_PROMPT = (
     "You are a witty, knowledgeable Indian cinema expert. "
     "You write short, personalised movie recommendations that feel like they come "
     "from a knowledgeable friend — enthusiastic, specific, never generic. "
-    "Do not use emojis, icons, decorative symbols, or formulaic template phrases."
+    "Do not use emojis, icons, decorative symbols, or formulaic template phrases. "
+    "Avoid lead-ins like 'If you liked', 'If you enjoyed', or 'Fans of'."
 )
 
-_GEMINI_MODEL = "gemini-1.5-flash"
+_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 _GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+_BATCH_SIZE = 5
+_GEMINI_TIMEOUT_SECONDS = 30
+_GEMINI_MAX_RETRIES = 1
+_GEMINI_RETRY_BACKOFF_SECONDS = 2
+_GEMINI_RETRY_STATUS_CODES = {503}
 
 _EMOJI_PATTERN = re.compile(
     "["
@@ -93,29 +102,49 @@ def rule_based_justification(movie, query_bundle: str = "") -> str:
     intent    = _clip_text(query_bundle, 90)
     intent_px = f"For your {intent}, " if intent else ""
 
-    templates = [
-        f"{intent_px}this {adj} {lang} {top_genre.lower()} is rated {rating:.1f}★ by {votes:,} fans and feels like a strong match.",
-        f"{intent_px}{'Directed by ' + director + ', this' if director else 'This'} {lang} {top_genre.lower()} delivers {adj} storytelling with a {rating:.1f}★ score.",
-        f"{intent_px}{'With ' + top_cast + ' in the lead, this' if top_cast else 'This'} {adj} {lang} film has won {votes:,} fans over.",
-        f"{intent_px}one of {lang} cinema's best {top_genre.lower()} entries at {rating:.1f}★, with the right mood and energy.",
-        f"{intent_px}{'By ' + director + ', ' if director else ''}a {adj} {lang} {top_genre.lower()} that fans rate a strong {rating:.1f}★.",
-    ]
+    line_1 = f"{intent_px}{adj} {lang} {top_genre.lower()} energy with a {rating:.1f}★ score from {votes:,} fans."
+    if director:
+        line_2 = f"Directed by {director}, it leans into {adj} storytelling and a strong genre focus."
+    else:
+        line_2 = f"The {top_genre.lower()} focus and {adj} tone make it a close mood match."
+    if top_cast:
+        line_3 = f"{top_cast} leads the cast, giving it familiar star power in this genre space."
+    else:
+        line_3 = f"A solid {lang} pick that fits the tone and pacing you're after."
 
-    # Deterministic choice based on movie_id for consistency
-    movie_id = str(getattr(movie, "movie_id", ""))
-    idx = int(movie_id) % len(templates) if movie_id.isdigit() else 0
-    return templates[idx]
+    lines = [line_1, line_2, line_3]
+    return "\n".join(lines)
 
 
 # ── LLM justification ─────────────────────────────────────────────────────────
 
 def _clean_llm_text(text: str) -> str:
-    """Normalize model output into a single clean sentence."""
+    """Normalize model output into 2-3 short lines."""
     cleaned = strip_emoji(text.strip().strip('"').strip("'"))
-    cleaned = re.sub(r"\s+", " ", cleaned).strip()
-    if len(cleaned) > 220:
-        cleaned = cleaned[:217] + "..."
-    return cleaned
+    lines = [re.sub(r"\s+", " ", line).strip() for line in cleaned.splitlines() if line.strip()]
+    if len(lines) < 2:
+        sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", cleaned) if s.strip()]
+        if len(sentences) >= 2:
+            lines = sentences[:3]
+        elif sentences:
+            lines = sentences
+        elif not lines:
+            lines = [re.sub(r"\s+", " ", cleaned).strip()]
+
+    if len(lines) > 3:
+        lines = lines[:3]
+
+    trimmed_lines = []
+    for line in lines:
+        words = line.split()
+        if len(words) > 18:
+            line = " ".join(words[:18]).rstrip() + "..."
+        trimmed_lines.append(line)
+
+    joined = "\n".join(trimmed_lines)
+    if len(joined) > 600:
+        joined = joined[:597] + "..."
+    return joined
 
 
 def _movie_prompt_block(movie, compact_prompt: bool = True) -> str:
@@ -151,14 +180,69 @@ def _build_justification_prompt(movie, query_bundle: str, compact_prompt: bool =
 Movie facts:
 {movie_block}
 
-Write exactly ONE sentence, max 28 words, explaining why this movie matches the user's intent.
+Write 2-3 short lines (each line max 18 words) explaining why this movie matches the user's intent.
 Rules:
   - Use only the movie facts above and the user's intent.
   - Mention one or two concrete details from the movie facts.
   - Do NOT invent plot details that are not present in the facts.
   - Keep it specific, natural, and conversational.
-  - Do NOT start with "This movie", "This film", or "It".
-  - Output the justification only.'''
+    - Do NOT start any line with "This movie", "This film", "It", "If you liked", "If you enjoyed", or "Fans of".
+    - Put each line on its own line, no bullets or numbering.
+    - Output the justification only.'''
+
+
+def _build_batch_prompt(movies: list, query_bundle: str, compact_prompt: bool = True) -> str:
+    max_query_chars = 280 if compact_prompt else 360
+    movie_sections = []
+    for idx, movie in enumerate(movies, start=1):
+        movie_sections.append(f"Movie {idx}:\n{_movie_prompt_block(movie, compact_prompt=compact_prompt)}")
+    movie_block = "\n\n".join(movie_sections)
+    n_movies = len(movies)
+    return f'''User intent:
+"{_clip_text(query_bundle, max_query_chars)}"
+
+Movies:
+{movie_block}
+
+Write exactly ONE sentence per movie, max 28 words each.
+Rules:
+  - Use only the movie facts above and the user's intent.
+  - Mention one or two concrete details from the movie facts.
+  - Do NOT invent plot details that are not present in the facts.
+  - Keep it specific, natural, and conversational.
+  - Do NOT start any sentence with "This movie", "This film", or "It".
+Return exactly {n_movies} lines, in the same order, formatted like:
+1. <sentence>
+2. <sentence>
+Do not include any extra text.'''
+
+
+def _parse_batch_output(text: str, expected_count: int) -> list[str]:
+    cleaned = text.strip()
+    cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned).strip()
+    cleaned = re.sub(r"\s*```$", "", cleaned).strip()
+
+    try:
+        data = json.loads(cleaned)
+        if isinstance(data, list) and all(isinstance(item, str) for item in data):
+            if len(data) >= expected_count:
+                return data[:expected_count]
+    except Exception:
+        pass
+
+    lines = [line.strip() for line in cleaned.splitlines() if line.strip()]
+    numbered = []
+    for line in lines:
+        match = re.match(r"^\d+[\).:\-]\s*(.+)$", line)
+        if match:
+            numbered.append(match.group(1).strip())
+    if len(numbered) >= expected_count:
+        return numbered[:expected_count]
+
+    if len(lines) >= expected_count:
+        return lines[:expected_count]
+
+    raise ValueError("Gemini batch output did not include enough items")
 
 
 def _cache_namespace(api_key: Optional[str], model: str = _GEMINI_MODEL) -> str:
@@ -173,27 +257,65 @@ def _call_gemini(
     user_prompt: str,
     api_key: str,
     model: str = _GEMINI_MODEL,
+    max_output_tokens: int = 400,
+    response_mime_type: Optional[str] = None,
 ) -> str:
     """Call Gemini via the public REST API and return the generated text."""
+    # ── DEBUG: Print prompt being sent ────────────────────────────────────────
+    print("\n" + "="*80)
+    print("📤 GEMINI API REQUEST")
+    print("="*80)
+    print(f"Model: {model}")
+    print(f"\n🔤 SYSTEM PROMPT:\n{_SYSTEM_PROMPT}")
+    print(f"\n❓ USER PROMPT:\n{user_prompt}")
+    print("="*80)
+    
+    combined_prompt = f"{_SYSTEM_PROMPT}\n\n{user_prompt}"
+    generation_config = {
+        "temperature": 0.7,
+        "topP": 0.9,
+        "maxOutputTokens": max_output_tokens,
+    }
+    if response_mime_type:
+        generation_config["responseMimeType"] = response_mime_type
+
     payload = {
-        "systemInstruction": {
-            "parts": [{"text": _SYSTEM_PROMPT}],
-        },
         "contents": [
             {
-                "role": "user",
-                "parts": [{"text": user_prompt}],
+                "parts": [{"text": combined_prompt}],
             }
         ],
-        "generationConfig": {
-            "temperature": 0.7,
-            "topP": 0.9,
-            "maxOutputTokens": 120,
-        },
+        "generationConfig": generation_config,
     }
     url = _GEMINI_ENDPOINT.format(model=model)
-    response = requests.post(url, params={"key": api_key}, json=payload, timeout=20)
-    response.raise_for_status()
+    response = None
+    for attempt in range(_GEMINI_MAX_RETRIES + 1):
+        response = requests.post(
+            url,
+            params={"key": api_key},
+            json=payload,
+            timeout=_GEMINI_TIMEOUT_SECONDS,
+        )
+        try:
+            response.raise_for_status()
+            break
+        except requests.exceptions.HTTPError as e:
+            status_code = response.status_code if response is not None else None
+            if status_code in _GEMINI_RETRY_STATUS_CODES and attempt < _GEMINI_MAX_RETRIES:
+                time.sleep(_GEMINI_RETRY_BACKOFF_SECONDS)
+                continue
+            print("\n" + "!"*80)
+            print("🔴 GEMINI API HTTP ERROR")
+            print("!"*80)
+            if response is not None:
+                print(f"URL: {response.url}")
+                print(f"Status code: {response.status_code}")
+                try:
+                    print("Response body:\n", response.text)
+                except Exception:
+                    pass
+            print("!"*80 + "\n")
+            raise
     data = response.json()
 
     if data.get("error"):
@@ -208,6 +330,14 @@ def _call_gemini(
     text = "".join(part.get("text", "") for part in parts if isinstance(part, dict)).strip()
     if not text:
         raise ValueError("Gemini returned empty content")
+    
+    # ── DEBUG: Print response from Gemini ────────────────────────────────────────
+    print("\n" + "="*80)
+    print("📥 GEMINI API RESPONSE")
+    print("="*80)
+    print(f"✅ Generated Justification:\n{text}")
+    print("="*80 + "\n")
+    
     return text
 
 
@@ -223,18 +353,26 @@ def get_justification(
     Falls back to rule_based_justification on any error or missing key.
     """
     if not api_key:
-        return rule_based_justification(movie, query_bundle), "fallback"
+        raise ValueError("GEMINI_API_KEY is required to generate justifications.")
 
     cache_namespace = _cache_namespace(api_key, model)
 
     try:
+        print(f"\n🔄 Calling Gemini LLM for: {movie.title} ({movie.movie_id})")
         user_prompt = _build_justification_prompt(movie, query_bundle, compact_prompt=compact_prompt)
 
         text = _call_gemini(user_prompt, api_key=api_key, model=model)
-        return _clean_llm_text(text), cache_namespace
+        cleaned = _clean_llm_text(text)
+        print(f"✅ SUCCESS: Gemini returned for {movie.title}")
+        print(f"   Final output: {cleaned}\n")
+        return cleaned, cache_namespace
 
-    except Exception:
+    except requests.exceptions.ReadTimeout:
+        print(f"❌ GEMINI API TIMEOUT for {movie.title} ({_GEMINI_TIMEOUT_SECONDS}s)")
         return rule_based_justification(movie, query_bundle), cache_namespace
+    except Exception as e:
+        print(f"❌ GEMINI API FAILED for {movie.title}: {str(e)}")
+        raise
 
 
 # ── Cache helpers ─────────────────────────────────────────────────────────────
@@ -263,22 +401,40 @@ def batch_justify(
 
     q_hash = _query_hash(query_bundle)
     backend_tag = _cache_namespace(api_key, model)
+    
+    # ── DEBUG: Print batch info ──────────────────────────────────────────────────
+    print(f"\n🎬 Processing {len(movies)} movies for justifications")
+    print(f"Query hash: {q_hash}")
+    print(f"Backend: {backend_tag}")
+    print()
 
+    missing_movies = []
     for movie in movies:
         cache_key = f"{backend_tag}:{movie.movie_id}_{q_hash}"
         if cache_key in justification_cache:
             movie.justification = justification_cache[cache_key]
             movie.justification_source = backend_tag
+            print(f"✅ [CACHED] {movie.title} ({movie.movie_id}) - Source: {backend_tag}")
         else:
-            just, cache_backend = get_justification(
-                movie,
-                query_bundle,
-                api_key=api_key,
-                model=model,
-                compact_prompt=True,
-            )
-            movie.justification = just
-            movie.justification_source = cache_backend
-            justification_cache[f"{cache_backend}:{movie.movie_id}_{q_hash}"] = just
+            missing_movies.append(movie)
+
+    if not missing_movies:
+        return movies, justification_cache
+
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is required to generate justifications.")
+
+    for movie in missing_movies:
+        just, cache_backend = get_justification(
+            movie,
+            query_bundle,
+            api_key=api_key,
+            model=model,
+            compact_prompt=True,
+        )
+        movie.justification = just
+        movie.justification_source = cache_backend
+        justification_cache[f"{cache_backend}:{movie.movie_id}_{q_hash}"] = just
+        print(f"🆕 [GEMINI] {movie.title} ({movie.movie_id})")
 
     return movies, justification_cache
