@@ -39,7 +39,7 @@ from ui_components     import (
 
 DATA_PATH = os.environ.get("MOVIES_CSV",    "data/movies.csv")
 DB_PATH   = os.environ.get("CHROMA_DB_PATH","./chroma_db")
-DEFAULT_GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or "AIzaSyA88IaWPBlfG-k5yohKrLy1kzjNl2i2jF4"
+DEFAULT_HF_TOKEN = os.environ.get("HF_TOKEN", "")
 
 
 # ── Cached startup ────────────────────────────────────────────────────────────
@@ -100,7 +100,7 @@ def run_search(collection, df, filters, selected_movie, free_text, selected_chip
         return None, query_bundle
 
     if show_justifications:
-        with st.spinner("Generating Gemini justifications…"):
+        with st.spinner("Generating movie justifications…"):
             results, st.session_state.justification_cache = batch_justify(
                 movies              = results,
                 query_bundle        = query_bundle,
@@ -149,13 +149,13 @@ def main() -> None:
         st.markdown("---")
 
         filters  = render_sidebar_filters()
-        # settings = render_settings_sidebar(default_api_key=DEFAULT_GEMINI_API_KEY)
+        # settings = render_settings_sidebar(default_api_key=DEFAULT_HF_TOKEN)
         # if not settings["api_key"]:
-        #     st.warning("LLM justifications are using the local fallback because no Gemini key is active.")
+        #     st.warning("LLM justifications are using the local fallback because no HF token is active.")
         
         # Hardcode settings defaults since UI is removed
         settings = {
-            "api_key": DEFAULT_GEMINI_API_KEY,
+            "api_key": DEFAULT_HF_TOKEN,
             "show_justifications": True,
             "show_score_bar": True
         }
@@ -271,7 +271,7 @@ def main() -> None:
         results = st.session_state.last_results
 
         if settings["show_justifications"] and any(not getattr(movie, "justification", "") for movie in results):
-            with st.spinner("Generating Gemini justifications…"):
+            with st.spinner("Generating movie justifications…"):
                 results, st.session_state.justification_cache = batch_justify(
                     movies              = results,
                     query_bundle        = st.session_state.last_query_bundle,

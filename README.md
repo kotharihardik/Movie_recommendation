@@ -24,7 +24,7 @@ Build a working recommendation system for Indian cinema that accepts a movie tit
 
 ## 2. Dataset
 
-**Source:** TMDB API (free tier). We fetched all movies with original language in {Hindi, Tamil, Telugu, Malayalam, Kannada} and vote\_count > 20, yielding **25,000+ titles**.
+**Source:** TMDB API (free tier). We fetched all movies with original language in {Hindi, Tamil, Telugu, Malayalam, Kannada} and vote\_count > 20, yielding **25,000+ Movies**.
 
 **Fields:** id, title, original\_title, language, overview, genres, keywords, cast, director, release\_date, runtime, popularity, vote\_average, vote\_count, budget, revenue, production\_companies, production\_countries, spoken\_languages, poster\_path, tagline, adult
 
@@ -148,13 +148,14 @@ Built with Streamlit. Three composable input modes: movie selector dropdown, fre
 
 **Query A:** "Intense survival-action movie with relentless enemies and nonstop tension"
 
-| | |
-|---|---|
-| 1. Pathaan | 2. War 2 |
-| 3. The Return of the Army Man | 4. Soch Lo |
-| 5. An Action Hero | 6. War |
-| 7. Holiday | 8. Ek Villain |
-| 9. Flight | 10. Krrish 3 |
+| Column 1                      | Column 2      |
+| ----------------------------- | ------------- |
+| 1. Pathaan                    | 6. War        |
+| 2. War 2                      | 7. Holiday    |
+| 3. The Return of the Army Man | 8. Ek Villain |
+| 4. Soch Lo                    | 9. Flight     |
+| 5. An Action Hero             | 10. Krrish 3  |
+
 
 **Analysis:** Results are correctly dominated by high-octane Hindi action films. "Pathaan", "War", and "War 2" are the canonical high-stakes, nonstop-action franchise entries -- their top placement confirms the system aligns intent prose with actual film content. "Holiday" and "Ek Villain" are slightly softer but still tension-driven, which reflects the embedding capturing "thriller" semantics even without that word in the query. "Flight" (survival drama) and "Krrish 3" (relentless enemy) match "survival" and "relentless enemies" via plot Jaccard on uncommon motif tokens.
 
@@ -162,13 +163,14 @@ Built with Streamlit. Three composable input modes: movie selector dropdown, fre
 
 **Query B:** Pathaan (title-only, semantic mode)
 
-| | |
-|---|---|
-| 1. War | 2. Jawan |
-| 3. Fighter | 4. Sooryavanshi |
-| 5. An Action Hero | 6. Attack |
-| 7. Jaat | 8. Tiger 3 |
-| 9. War 2 | 10. Race 2 |
+| Column 1          | Column 2   |
+| ----------------- | ---------- |
+| 1. War            | 6. Attack  |
+| 2. Jawan          | 7. Jaat    |
+| 3. Fighter        | 8. Tiger 3 |
+| 4. Sooryavanshi   | 9. War 2   |
+| 5. An Action Hero | 10. Race 2 |
+
 
 **Analysis:** Title-only mode uses the full semantic pipeline with cross-encoder reranking. Top results are precisely the correct peer cluster: YRF spy-universe films (War, Tiger 3, War 2), large-budget patriotic action (Jawan, Fighter, Sooryavanshi), and franchise action (Race 2). This reflects strong director-match and cast-Jaccard signals (Shah Rukh Khan, Hrithik Roshan, Akshay Kumar appearing frequently across these films), combined with cross-encoder correctly scoring "high-octane patriotic thriller" similarity. The franchise boost correctly surfaces War 2 despite it being newer/lower-voted.
 
@@ -199,4 +201,4 @@ Built with Streamlit. Three composable input modes: movie selector dropdown, fre
 
 ## 8. Conclusion
 
-CineMatch India demonstrates that a well-engineered hybrid of TF-IDF, sentence embeddings, a cross-encoder reranker, and domain-specific signals (Fame Score, Bayesian rating, Plot Jaccard, intent expansion) produces high-quality, explainable recommendations for 25,000+ Indian films across five languages -- without any model fine-tuning or labelled data, running under 2 seconds per query on CPU.
+CineMatch India demonstrates that a well-engineered hybrid of TF-IDF, sentence embeddings, a cross-encoder reranker, and domain-specific signals (Fame Score, Bayesian rating, Plot Jaccard, intent expansion) produces high-quality, explainable recommendations for 25,000+ Indian films across five languages, without any model fine-tuning or labelled data, running under 2 seconds per query on CPU.

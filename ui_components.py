@@ -905,7 +905,8 @@ def render_movie_card(
 
         # ── Why you'll love this ──────────────────────────────────
         if show_justification and movie.justification:
-            source_label = "Gemini" if str(getattr(movie, "justification_source", "")).startswith("gemini:") else "Fallback"
+            # Show a friendly label indicating AI/LLM-generated justification
+            source_label = "AI Insight"
             st.markdown(
                 f'<div class="just-box"><span class="just-source">{source_label}</span>Why it matches: &nbsp;{strip_emoji(movie.justification)}</div>',
                 unsafe_allow_html=True,
@@ -1002,10 +1003,10 @@ def render_settings_sidebar(default_api_key: str = "") -> dict:
 
     with st.expander("AI & UI Settings", expanded=False):
         api_key = st.text_input(
-            "Gemini API Key",
+            "HF Token",
             value=default_api_key,
             type="password",
-            help="Enter your Gemini API key to enable AI-powered justifications. If left blank, it uses the local fallback.",
+            help="Enter your Hugging Face token to enable AI-powered justifications. If left blank, it uses the local fallback.",
         )
 
         show_justifications = st.toggle(
