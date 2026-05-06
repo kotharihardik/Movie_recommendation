@@ -13,7 +13,6 @@ import hashlib
 import json
 import os
 import re
-import time
 from typing import Optional
 
 import requests
@@ -53,13 +52,10 @@ _SYSTEM_PROMPT = (
     "Avoid lead-ins like 'If you liked', 'If you enjoyed', or 'Fans of'."
 )
 
-_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest")
 _GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _BATCH_SIZE = 5
 _GEMINI_TIMEOUT_SECONDS = 30
-_GEMINI_MAX_RETRIES = 1
-_GEMINI_RETRY_BACKOFF_SECONDS = 2
-_GEMINI_RETRY_STATUS_CODES = {503}
 
 _EMOJI_PATTERN = re.compile(
     "["
@@ -288,34 +284,21 @@ def _call_gemini(
         "generationConfig": generation_config,
     }
     url = _GEMINI_ENDPOINT.format(model=model)
-    response = None
-    for attempt in range(_GEMINI_MAX_RETRIES + 1):
-        response = requests.post(
-            url,
-            params={"key": api_key},
-            json=payload,
-            timeout=_GEMINI_TIMEOUT_SECONDS,
-        )
+    response = requests.post(url, params={"key": api_key}, json=payload, timeout=_GEMINI_TIMEOUT_SECONDS)
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        print("\n" + "!"*80)
+        print("🔴 GEMINI API HTTP ERROR")
+        print("!"*80)
+        print(f"URL: {response.url}")
+        print(f"Status code: {response.status_code}")
         try:
-            response.raise_for_status()
-            break
-        except requests.exceptions.HTTPError as e:
-            status_code = response.status_code if response is not None else None
-            if status_code in _GEMINI_RETRY_STATUS_CODES and attempt < _GEMINI_MAX_RETRIES:
-                time.sleep(_GEMINI_RETRY_BACKOFF_SECONDS)
-                continue
-            print("\n" + "!"*80)
-            print("🔴 GEMINI API HTTP ERROR")
-            print("!"*80)
-            if response is not None:
-                print(f"URL: {response.url}")
-                print(f"Status code: {response.status_code}")
-                try:
-                    print("Response body:\n", response.text)
-                except Exception:
-                    pass
-            print("!"*80 + "\n")
-            raise
+            print("Response body:\n", response.text)
+        except Exception:
+            pass
+        print("!"*80 + "\n")
+        raise
     data = response.json()
 
     if data.get("error"):
