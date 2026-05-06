@@ -46,7 +46,7 @@ _SYSTEM_PROMPT = (
     "You are a witty, knowledgeable Indian cinema expert. "
     "You write short, personalised movie recommendations that feel like they come "
     "from a knowledgeable friend — enthusiastic, specific, never generic. "
-    "Do not use emojis, icons, or decorative symbols."
+    "Do not use emojis, icons, decorative symbols, or formulaic template phrases."
 )
 
 _GEMINI_MODEL = "gemini-1.5-flash"
@@ -69,9 +69,16 @@ def strip_emoji(text: str) -> str:
     cleaned = cleaned.replace("\ufe0f", "").replace("\u200d", "")
     return re.sub(r"\s{2,}", " ", cleaned).strip()
 
+
+def _clip_text(text: str, limit: int) -> str:
+    cleaned = re.sub(r"\s+", " ", str(text or "")).strip()
+    if len(cleaned) > limit:
+        return cleaned[: max(limit - 3, 0)].rstrip() + "..."
+    return cleaned
+
 # ── Rule-based fallback ───────────────────────────────────────────────────────
 
-def rule_based_justification(movie) -> str:
+def rule_based_justification(movie, query_bundle: str = "") -> str:
     """
     Generate a template justification using only the movie's metadata.
     No API call required.
@@ -83,17 +90,20 @@ def rule_based_justification(movie) -> str:
     rating    = movie.vote_average
     votes     = movie.vote_count
     top_cast  = movie.cast[0] if movie.cast else None
+    intent    = _clip_text(query_bundle, 90)
+    intent_px = f"For your {intent}, " if intent else ""
 
     templates = [
-        f"A {adj} {lang} {top_genre.lower()} rated {rating:.1f}★ by {votes:,} fans — exactly the vibe you're after.",
-        f"{'Directed by ' + director + ', this' if director else 'This'} {lang} {top_genre.lower()} delivers {adj} storytelling with a {rating:.1f}★ score.",
-        f"{'With ' + top_cast + ' in the lead, this' if top_cast else 'This'} {adj} {lang} film has won {votes:,} fans over — and it'll win you too.",
-        f"One of {lang} cinema's best {top_genre.lower()} entries at {rating:.1f}★, this checks every box you're looking for.",
-        f"{'By ' + director + ', ' if director else ''}a {adj} {lang} {top_genre.lower()} that fans rate a strong {rating:.1f}★ — don't miss it.",
+        f"{intent_px}this {adj} {lang} {top_genre.lower()} is rated {rating:.1f}★ by {votes:,} fans and feels like a strong match.",
+        f"{intent_px}{'Directed by ' + director + ', this' if director else 'This'} {lang} {top_genre.lower()} delivers {adj} storytelling with a {rating:.1f}★ score.",
+        f"{intent_px}{'With ' + top_cast + ' in the lead, this' if top_cast else 'This'} {adj} {lang} film has won {votes:,} fans over.",
+        f"{intent_px}one of {lang} cinema's best {top_genre.lower()} entries at {rating:.1f}★, with the right mood and energy.",
+        f"{intent_px}{'By ' + director + ', ' if director else ''}a {adj} {lang} {top_genre.lower()} that fans rate a strong {rating:.1f}★.",
     ]
 
     # Deterministic choice based on movie_id for consistency
-    idx = int(movie.movie_id) % len(templates) if movie.movie_id.isdigit() else 0
+    movie_id = str(getattr(movie, "movie_id", ""))
+    idx = int(movie_id) % len(templates) if movie_id.isdigit() else 0
     return templates[idx]
 
 
@@ -106,6 +116,49 @@ def _clean_llm_text(text: str) -> str:
     if len(cleaned) > 220:
         cleaned = cleaned[:217] + "..."
     return cleaned
+
+
+def _movie_prompt_block(movie, compact_prompt: bool = True) -> str:
+    overview_limit = 220 if compact_prompt else 320
+    tagline_limit = 100 if compact_prompt else 140
+    lines = [
+        f"Title: {movie.title}",
+    ]
+    if movie.original_title and movie.original_title != movie.title:
+        lines.append(f"Original title: {movie.original_title}")
+    lines.extend([
+        f"Year: {movie.year}",
+        f"Language: {movie.language}",
+        f"Genres: {', '.join(movie.genres[:5]) if movie.genres else 'Unknown'}",
+        f"Director: {movie.director}" if movie.director and movie.director != 'Unknown' else None,
+        f"Cast: {', '.join(movie.cast[:4]) if movie.cast else 'Unknown'}",
+        f"Runtime: {movie.runtime} min" if not compact_prompt and movie.runtime else None,
+        f"Rating: {movie.vote_average:.1f}/10 from {movie.vote_count:,} votes",
+        f"Tagline: {_clip_text(movie.tagline, tagline_limit)}" if movie.tagline and movie.tagline != 'Unknown' else None,
+        f"Overview: {_clip_text(movie.overview, overview_limit)}" if movie.overview else None,
+        f"Budget: {movie.budget:,}" if not compact_prompt and movie.budget else None,
+        f"Revenue: {movie.revenue:,}" if not compact_prompt and movie.revenue else None,
+    ])
+    return "\n".join(f"- {line}" for line in lines if line)
+
+
+def _build_justification_prompt(movie, query_bundle: str, compact_prompt: bool = True) -> str:
+    max_query_chars = 280 if compact_prompt else 360
+    movie_block = _movie_prompt_block(movie, compact_prompt=compact_prompt)
+    return f'''User intent:
+"{_clip_text(query_bundle, max_query_chars)}"
+
+Movie facts:
+{movie_block}
+
+Write exactly ONE sentence, max 28 words, explaining why this movie matches the user's intent.
+Rules:
+  - Use only the movie facts above and the user's intent.
+  - Mention one or two concrete details from the movie facts.
+  - Do NOT invent plot details that are not present in the facts.
+  - Keep it specific, natural, and conversational.
+  - Do NOT start with "This movie", "This film", or "It".
+  - Output the justification only.'''
 
 
 def _cache_namespace(api_key: Optional[str], model: str = _GEMINI_MODEL) -> str:
@@ -143,6 +196,9 @@ def _call_gemini(
     response.raise_for_status()
     data = response.json()
 
+    if data.get("error"):
+        raise ValueError(str(data["error"]))
+
     candidates = data.get("candidates") or []
     if not candidates:
         raise ValueError("Gemini returned no candidates")
@@ -160,44 +216,25 @@ def get_justification(
     query_bundle: str,
     api_key:      Optional[str] = None,
     model:        str = _GEMINI_MODEL,
+    compact_prompt: bool = True,
 ) -> tuple[str, str]:
     """
     Call Gemini to generate one personalised justification sentence.
     Falls back to rule_based_justification on any error or missing key.
     """
     if not api_key:
-        return rule_based_justification(movie), "fallback"
+        return rule_based_justification(movie, query_bundle), "fallback"
 
     cache_namespace = _cache_namespace(api_key, model)
 
     try:
-        genres_str   = ", ".join(movie.genres[:4]) if movie.genres else "Drama"
-        cast_str     = ", ".join(movie.cast[:3])   if movie.cast   else "Unknown"
-        overview_snip = (movie.overview[:150] + "...") if len(movie.overview) > 150 else movie.overview
-        lang_label   = _LANG_LABEL.get(movie.language, "Indian")
-
-        user_prompt = f"""User preferences: "{query_bundle}"
-
-Recommended movie: "{movie.title}" ({movie.year}, {lang_label} cinema)
-Genres: {genres_str}
-Director: {movie.director}
-Cast: {cast_str}
-Rating: {movie.vote_average:.1f}/10 ({movie.vote_count:,} votes)
-Tagline: "{movie.tagline}"
-Overview snippet: "{overview_snip}"
-
-Write ONE compelling sentence (max 28 words) explaining why this film matches what the user wants.
-Rules:
-- Be specific: mention a concrete detail (genre, actor, director, mood, setting)
-- Do NOT start with "This movie", "This film", or "This"
-- Sound like an enthusiastic knowledgeable friend, not a press release
-- Write the justification only — no preamble, no labels"""
+        user_prompt = _build_justification_prompt(movie, query_bundle, compact_prompt=compact_prompt)
 
         text = _call_gemini(user_prompt, api_key=api_key, model=model)
         return _clean_llm_text(text), cache_namespace
 
     except Exception:
-        return rule_based_justification(movie), cache_namespace
+        return rule_based_justification(movie, query_bundle), cache_namespace
 
 
 # ── Cache helpers ─────────────────────────────────────────────────────────────
@@ -231,9 +268,17 @@ def batch_justify(
         cache_key = f"{backend_tag}:{movie.movie_id}_{q_hash}"
         if cache_key in justification_cache:
             movie.justification = justification_cache[cache_key]
+            movie.justification_source = backend_tag
         else:
-            just, cache_backend = get_justification(movie, query_bundle, api_key=api_key, model=model)
+            just, cache_backend = get_justification(
+                movie,
+                query_bundle,
+                api_key=api_key,
+                model=model,
+                compact_prompt=True,
+            )
             movie.justification = just
+            movie.justification_source = cache_backend
             justification_cache[f"{cache_backend}:{movie.movie_id}_{q_hash}"] = just
 
     return movies, justification_cache

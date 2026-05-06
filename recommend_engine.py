@@ -27,6 +27,7 @@ from __future__ import annotations
 import math
 import re
 import time
+import unicodedata
 from dataclasses import dataclass
 from typing import Optional
 
@@ -64,6 +65,7 @@ class RecommendedMovie:
     weighted_score: float   # normalised [0,1] shown as match %
     fame_score:     float   # popularity signal
     justification:  str = ""
+    justification_source: str = ""
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -628,7 +630,13 @@ def build_engine(df: pd.DataFrame) -> None:
         min_df=2, max_features=50_000, sublinear_tf=True,
     )
     _tfidf_matrix = _tfidf.fit_transform(_df["soup"])
-    _title_to_idx = pd.Series(_df.index, index=_df["title"].str.lower().str.strip())
+
+    def _normalize_title_key(value: str) -> str:
+        text = unicodedata.normalize("NFKD", str(value or "")).encode("ascii", "ignore").decode("ascii")
+        text = re.sub(r"([aeiou])\1+", r"\1", text.lower())
+        return re.sub(r"\s+", " ", text).strip()
+
+    _title_to_idx = pd.Series(_df.index, index=_df["title"].apply(_normalize_title_key))
     print(f"     TF-IDF matrix: {_tfidf_matrix.shape}")
 
     # ── 2. Semantic embedding model ────────────────────────────────────────
@@ -716,7 +724,13 @@ def _find_movie_idx(query: str, language: str = None, exact_only: bool = False) 
     """Title lookup: exact first, then optional startswith/contains fallback."""
     if _title_to_idx is None or _df is None:
         return None
-    q = query.lower().strip()
+
+    def _normalize_title_key(value: str) -> str:
+        text = unicodedata.normalize("NFKD", str(value or "")).encode("ascii", "ignore").decode("ascii")
+        text = re.sub(r"([aeiou])\1+", r"\1", text.lower())
+        return re.sub(r"\s+", " ", text).strip()
+
+    q = _normalize_title_key(query)
 
     def pick(series_or_int):
         idxs = list(series_or_int.values) if isinstance(series_or_int, pd.Series) else [int(series_or_int)]
@@ -728,14 +742,15 @@ def _find_movie_idx(query: str, language: str = None, exact_only: bool = False) 
 
     if q in _title_to_idx.index:
         return pick(_title_to_idx[q])
-    if exact_only:
-        return None
+
     candidates = [k for k in _title_to_idx.index if k.startswith(q)]
     if candidates:
         return pick(_title_to_idx[candidates[0]])
     candidates = [k for k in _title_to_idx.index if q in k]
     if candidates:
         return pick(_title_to_idx[candidates[0]])
+    if exact_only:
+        return None
     return None
 
 
@@ -838,6 +853,15 @@ def _embed_scores_from_text(query_text: str) -> np.ndarray:
     return (_embed_vecs @ q_vec).flatten()
 
 
+def _tfidf_scores_from_text(query_text: str) -> np.ndarray:
+    """Compute TF-IDF similarity for free-text query."""
+    if _tfidf is None or _tfidf_matrix is None:
+        return np.zeros(len(_df))
+    q_tfidf = _tfidf.transform([_clean_token(query_text)])
+    sims = (linear_kernel(q_tfidf, _tfidf_matrix).flatten())
+    return sims
+
+
 def _knn_scores(anchor_idx: int) -> np.ndarray:
     out = np.zeros(len(_df))
     if _knn is None or _movie_vecs is None:
@@ -897,10 +921,15 @@ def _ensure_reranker() -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _normalise_franchise(title: str) -> str:
-    t = re.sub(r"[^a-z0-9 ]+", " ", str(title).lower())
+    t = unicodedata.normalize("NFKD", str(title or "")).encode("ascii", "ignore").decode("ascii").lower()
+    t = re.split(r"\s[-–—]\s|:", t, maxsplit=1)[0].strip()
+    t = re.sub(r"[^a-z0-9 ]+", " ", t)
     t = re.sub(r"\s+", " ", t).strip()
-    t = re.sub(r"\b(?:part|chapter|episode)\b\s*[a-z0-9ivx]*$", "", t).strip()
+    t = re.sub(r"\b(?:the|a|an)$", "", t).strip()
+    t = re.sub(r"\b(?:part|chapter|episode)\b\s*(?:one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+|[ivx]+)?$", "", t).strip()
+    t = re.sub(r"\b(?:beginning|conclusion|epic|returns?|again|rise|rises|return|next level)\b$", "", t).strip()
     t = re.sub(r"\b(?:[0-9]+|[ivx]+)\b$", "", t).strip()
+    t = re.sub(r"\s+", " ", t).strip()
     return t
 
 
@@ -937,9 +966,15 @@ def _decade_label(year: int) -> str:
     return "Classic (<1990)"
 
 
-def _ensure_anchor_decade(decade_filter: list, anchor_year: int) -> list:
+def _ensure_anchor_decade(decade_filter: list, anchor_year: int, include_old_movies: bool = False) -> list:
     if not decade_filter:
         return decade_filter
+    
+    # If in Classic mode, we only want to stay in the classic decades.
+    # If the anchor is modern, we don't want to bring modern results into a classic search.
+    if include_old_movies:
+        return decade_filter
+
     updated = list(decade_filter)
     label = _decade_label(anchor_year)
     if label == "Classic (<1990)":
@@ -1418,7 +1453,9 @@ def _hybrid_recommend(
     top_n:          int = 10,
     min_vote_avg:   float = 5.0,
     genre_only_mode:bool  = False,
+    include_old_movies: bool = False,
     diversify:      bool  = False,
+    free_text_raw:  Optional[str] = None,
 ) -> list[RecommendedMovie]:
 
     df = _df
@@ -1457,8 +1494,9 @@ def _hybrid_recommend(
         print(f"[DEBUG][HYBRID] blend: tfidf×{ANCHOR_WEIGHTS['tfidf']} + embed×{ANCHOR_WEIGHTS['embed']} + cf×{ANCHOR_WEIGHTS['cf']}")
     else:
         s_embed   = _embed_scores_from_text(query_text) if query_text else np.zeros(n)
-        total_sim = s_embed
-        print("[DEBUG][HYBRID] no anchor — pure text/chip mode")
+        s_tfidf   = _tfidf_scores_from_text(query_text) if query_text else np.zeros(n)
+        total_sim = 0.65 * s_embed + 0.35 * s_tfidf
+        print("[DEBUG][HYBRID] no anchor — text/chip mode blend: embed*0.65 + tfidf*0.35")
         print(f"  query: {_fmt_text(query_text)}")
         print(f"  genres: {sorted(query_genres)}")
 
@@ -1507,12 +1545,13 @@ def _hybrid_recommend(
     )
 
     if genre_only_mode:
+        # Chip-only mode (Input 3 only): Heavily prioritize actual genre/mood presence
         if query_genres == {"Romance"}:
-            final = 0.62 * sim_norm + 0.18 * chip_affinity_rank + 0.10 * genre_signal + 0.06 * rating_norm + 0.02 * vc_all + 0.02 * fame_all
-            print("[DEBUG][HYBRID] genre_only mix: romance_focus sim_norm*0.62 + chip_affinity*0.18 + genre_signal*0.10 + rating*0.06 + vc*0.02 + fame*0.02")
+            final = 0.30 * sim_norm + 0.35 * chip_affinity_rank + 0.25 * genre_signal + 0.06 * rating_norm + 0.02 * vc_all + 0.02 * fame_all
+            print("[DEBUG][HYBRID] genre_only mix (Romance): sim_norm*0.30 + chip_affinity*0.35 + genre_signal*0.25 + rating*0.06 + vc*0.02 + fame*0.02")
         else:
-            final = 0.56 * sim_norm + 0.18 * chip_affinity_rank + 0.14 * genre_signal + 0.06 * vc_all + 0.03 * fame_all + 0.03 * rating_norm
-            print("[DEBUG][HYBRID] genre_only mix: sim_norm*0.56 + chip_affinity*0.18 + genre_signal*0.14 + vc*0.06 + fame*0.03 + rating*0.03")
+            final = 0.30 * sim_norm + 0.30 * chip_affinity_rank + 0.30 * genre_signal + 0.06 * vc_all + 0.02 * fame_all + 0.02 * rating_norm
+            print("[DEBUG][HYBRID] genre_only mix: sim_norm*0.30 + chip_affinity*0.30 + genre_signal*0.30 + vc*0.06 + fame*0.02 + rating*0.02")
     else:
         final = (0.56 * sim_norm + 0.14 * chip_affinity_rank + 0.12 * genre_signal + 0.10 * vc_all + 0.05 * fame_all + 0.03 * rating_norm) * chip_genre_bias
         print("[DEBUG][HYBRID] mix: sim_norm*0.56 + chip_affinity*0.14 + genre_signal*0.12 + vc*0.10 + fame*0.05 + rating*0.03  (chip_bias applied)")
@@ -1523,6 +1562,18 @@ def _hybrid_recommend(
     if anchor_idx is None and query_text.strip():
         before = _pos(final); final *= text_gate
         _dbg_filter("HYBRID", "text semantic gate", before, _pos(final), "top-20% embed")
+
+        # Free-text keyword overlap boost (for better Input 2 accuracy)
+        if free_text_raw and free_text_raw.strip():
+            q_terms = _plot_terms(free_text_raw)
+            if q_terms:
+                kw_overlap = np.array([
+                    len(q_terms & _plot_terms(str(row.get("overview", ""))))
+                    for _, row in df.iterrows()
+                ], dtype=float)
+                kw_boost = _percentile_rank(kw_overlap)
+                final = 0.80 * final + 0.20 * kw_boost
+                print(f"[DEBUG][HYBRID] free-text keyword boost: {len(q_terms)} terms, weight 0.20")
 
     # Exclude anchor
     if anchor_idx is not None:
@@ -1539,6 +1590,13 @@ def _hybrid_recommend(
     # Decade
     dec_mask = _decade_mask(df, decade_filter)
     before = _pos(final); final *= dec_mask; _dbg_filter("HYBRID", "decade", before, _pos(final))
+
+    # Force 2010+ for free-text/chip-only modes (Input 2 and 3)
+    if anchor_idx is None and (query_text.strip() or selected_chips):
+        before = _pos(final)
+        year_gate = (df["release_year"].fillna(0).values >= 2010)
+        final *= year_gate
+        _dbg_filter("HYBRID", "year gate (Input 2/3)", before, _pos(final), ">=2010")
 
     # Genre-only: enforce at least one genre hit
     if genre_only_mode and query_genres:
@@ -1559,8 +1617,25 @@ def _hybrid_recommend(
     clean_mask = np.array([_is_clean_title(t) for t in df["title"]])
     before = _pos(final); final *= clean_mask; _dbg_filter("HYBRID", "clean title", before, _pos(final))
 
-    # Year window
-    if anchor_idx is not None and q_year is not None:
+    if anchor_idx is None and query_text.strip():
+        _ensure_reranker()
+        if _reranker is not None:
+            rerank_pool = min(int(np.count_nonzero(final > 0.0)), max(top_n * 10, 80), 250)
+            if rerank_pool > 0:
+                rerank_seed = np.argsort(final)[::-1][:rerank_pool]
+                rerank_seed = rerank_seed[final[rerank_seed] > 0.0]
+                if len(rerank_seed) > 0:
+                    avg_fame_in_pool = float(np.mean(fame_all[rerank_seed])) if len(rerank_seed) > 0 else 0.0
+                    rerank_query = _build_free_text_reranker_query(query_text, selected_chips, free_text_raw=free_text_raw, avg_fame=avg_fame_in_pool)
+                    candidate_texts = [_make_reranker_text(df.iloc[idx]) for idx in rerank_seed]
+                    pair_inputs = [(rerank_query, candidate_text) for candidate_text in candidate_texts]
+                    rerank_scores = np.asarray(_reranker.predict(pair_inputs, batch_size=16), dtype=float)
+                    rerank_rank = _percentile_rank(rerank_scores)
+                    final[rerank_seed] = 0.72 * final[rerank_seed] + 0.28 * rerank_rank
+                    print(f"[DEBUG][HYBRID] cross-encoder rerank: pool={len(rerank_seed)} avg_fame={avg_fame_in_pool:.3f} weight=0.28")
+
+    # Year window (disable if explicitly looking for classics and anchor is modern)
+    if anchor_idx is not None and q_year is not None and not include_old_movies:
         yr_diff = np.abs(df["release_year"].values - q_year)
         windowed = final * (yr_diff <= 15)
         if int(windowed.astype(bool).sum()) >= top_n * 2:
@@ -1586,7 +1661,7 @@ def _hybrid_recommend(
             _dbg_filter("HYBRID", "effective genre gate", _pos(final), int(genre_ok.astype(bool).sum()))
             final = genre_ok
 
-    fetch_n  = top_n * 3 if diversify else top_n * 2
+    fetch_n  = top_n * 5 if diversify else top_n * 2
     top_idxs = np.argsort(final)[::-1][:fetch_n]
     top_idxs = top_idxs[final[top_idxs] > 0.0]
     print(f"[DEBUG][HYBRID] ranked pool={len(top_idxs)}  (fetch_n={fetch_n})")
@@ -1647,7 +1722,7 @@ def _hybrid_recommend(
 # MMR diversification
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _mmr(candidates: np.ndarray, scores: np.ndarray, top_n: int, lambda_: float = 0.7) -> np.ndarray:
+def _mmr(candidates: np.ndarray, scores: np.ndarray, top_n: int, lambda_: float = 0.5) -> np.ndarray:
     if _embed_vecs is None:
         return candidates[:top_n]
     selected, remaining = [], list(candidates)
@@ -1679,7 +1754,35 @@ def _build_query_text(free_text: str, selected_chips: list) -> str:
         parts.append(chip_intent)
 
     if free_text:
-        parts.append(free_text.strip())
+        t = free_text.strip()
+        parts.append(t)
+        # Emphasis boost: repeat the free-text part if it's substantial
+        if len(t) > 20:
+            parts.append(t)
+    return " ".join(parts).strip()
+
+
+def _build_free_text_reranker_query(query_text: str, selected_chips: list, free_text_raw: Optional[str] = None, avg_fame: Optional[float] = None) -> str:
+    """Build a concise query string for the cross-encoder reranker.
+    
+    Args:
+        avg_fame: Average fame score of candidate pool. If present, adds a popularity hint.
+    """
+    parts = []
+
+    chip_intent = _build_chip_intent_text(selected_chips or [])
+    if chip_intent:
+        parts.append(chip_intent)
+
+    source_text = free_text_raw if free_text_raw and free_text_raw.strip() else query_text
+    source_text = _fmt_text(source_text, 260)
+    if source_text and source_text != "-":
+        parts.append(source_text)
+
+    if avg_fame is not None and avg_fame > 0.3:
+        popularity_hint = "Well-known or acclaimed films" if avg_fame > 0.6 else "Reasonably popular films"
+        parts.append(f"({popularity_hint})")
+
     return " ".join(parts).strip()
 
 
@@ -1735,14 +1838,13 @@ def get_recommendations(
     genre_only_mode = bool(
         anchor_idx is None and
         not (free_text or "").strip() and
-        bool(selected_chip_terms) and
-        selected_chip_terms.issubset(SUPPORTED_GENRES)
+        bool(selected_chips)
     )
 
     effective_decade_filter = list(decade_filter or [])
     if anchor_idx is not None:
         anchor_year = int(_df.loc[anchor_idx].get("release_year", 2000))
-        new_filter  = _ensure_anchor_decade(effective_decade_filter, anchor_year)
+        new_filter  = _ensure_anchor_decade(effective_decade_filter, anchor_year, include_old_movies=include_old_movies)
         if new_filter != effective_decade_filter:
             print(f"[DEBUG][REQUEST] decade auto-adjusted to include {_decade_label(anchor_year)}")
         effective_decade_filter = new_filter
@@ -1787,7 +1889,8 @@ def get_recommendations(
                 anchor_idx=anchor_idx, query_text=query_text,
                 query_genres=query_genres, selected_chips=selected_chips or [], language_codes=language_codes,
                 decade_filter=effective_decade_filter, top_n=top_n,
-                min_vote_avg=min_vote_avg, genre_only_mode=False, diversify=diversify,
+                include_old_movies=include_old_movies,
+                min_vote_avg=min_vote_avg, genre_only_mode=False, diversify=diversify, free_text_raw=free_text,
             )
     elif title_miss_mode:
         results = _scifi_fame_fallback(
@@ -1805,14 +1908,16 @@ def get_recommendations(
                 anchor_idx=anchor_idx, query_text=query_text,
                 query_genres=query_genres, selected_chips=selected_chips or [], language_codes=language_codes,
                 decade_filter=effective_decade_filter, top_n=top_n,
-                min_vote_avg=min_vote_avg, genre_only_mode=genre_only_mode, diversify=diversify,
+                include_old_movies=include_old_movies,
+                min_vote_avg=min_vote_avg, genre_only_mode=genre_only_mode, diversify=diversify, free_text_raw=free_text,
             )
     else:
         results = _hybrid_recommend(
             anchor_idx=anchor_idx, query_text=query_text,
             query_genres=query_genres, selected_chips=selected_chips or [], language_codes=language_codes,
             decade_filter=effective_decade_filter, top_n=top_n,
-            min_vote_avg=min_vote_avg, genre_only_mode=genre_only_mode, diversify=diversify,
+            include_old_movies=include_old_movies,
+            min_vote_avg=min_vote_avg, genre_only_mode=genre_only_mode, diversify=diversify, free_text_raw=free_text,
         )
 
     chip_only_mode = bool(anchor_idx is None and not (free_text or "").strip() and (selected_chips or []))
@@ -1837,8 +1942,10 @@ def get_recommendations(
 
     parts = []
     if anchor_label:             parts.append(f"Similar to \u201c{anchor_label}\u201d")
-    if free_text:                parts.append(free_text[:60] + ("…" if len(free_text) > 60 else ""))
-    if selected_chips:           parts.append(" · ".join(selected_chips))
+    if free_text:
+        parts.append(f'Free text vibe: "{_fmt_text(free_text, 260)}"')
+    if selected_chips:
+        parts.append(f"Chips: {' · '.join(selected_chips)}")
     if fallback_note:
         parts.append(fallback_note)
     if title_miss_mode and not results:

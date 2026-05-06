@@ -71,6 +71,70 @@ def _has_action_genre(genres_val) -> bool:
     return "action" in _genre_tokens(genres_val)
 
 
+def _svg_icon(name: str, color: str = "currentColor") -> str:
+    """Return a tiny inline SVG icon for use inside Streamlit markdown."""
+    icons = {
+        "film": (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" '
+            'width="15" height="15" fill="none" stroke="{color}" stroke-width="2" '
+            'stroke-linecap="round" stroke-linejoin="round">'
+            '<rect x="3" y="4" width="18" height="16" rx="2"/>'
+            '<path d="M7 4v16"/><path d="M17 4v16"/>'
+            '<path d="M3 9h18"/><path d="M3 15h18"/>'
+            '</svg>'
+        ),
+        "calendar": (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" '
+            'width="14" height="14" fill="none" stroke="{color}" stroke-width="2" '
+            'stroke-linecap="round" stroke-linejoin="round">'
+            '<rect x="3" y="5" width="18" height="16" rx="2"/>'
+            '<path d="M8 3v4"/><path d="M16 3v4"/><path d="M3 9h18"/>'
+            '</svg>'
+        ),
+        "clock": (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" '
+            'width="14" height="14" fill="none" stroke="{color}" stroke-width="2" '
+            'stroke-linecap="round" stroke-linejoin="round">'
+            '<circle cx="12" cy="12" r="9"/>'
+            '<path d="M12 7v5l3 2"/>'
+            '</svg>'
+        ),
+        "heart": (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" '
+            'width="14" height="14" fill="none" stroke="{color}" stroke-width="2" '
+            'stroke-linecap="round" stroke-linejoin="round">'
+            '<path d="M20.8 8.6c0 4.9-8.8 10.9-8.8 10.9S3.2 13.5 3.2 8.6c0-2.9 2.2-5.1 5-5.1 1.7 0 3.1.9 3.8 2.2.7-1.3 2.1-2.2 3.8-2.2 2.8 0 5 2.2 5 5.1z"/>'
+            '</svg>'
+        ),
+    }
+    svg = icons.get(name, icons["film"]).format(color=color)
+    return f'<span class="icon-inline">{svg}</span>'
+
+
+def _star_svg(kind: str, color: str = "#F5C518") -> str:
+    """Return a single SVG star in full, half, or empty state."""
+    star_path = (
+        '<path d="M12 2.8l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 19.6 5.8 22l1.2-6.9-5-4.9 6.9-1L12 2.8z"/>'
+    )
+    if kind == "full":
+        return (
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" '
+            f'fill="{color}" class="star-svg">{star_path}</svg>'
+        )
+    if kind == "half":
+        return (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" '
+            f'fill="none" stroke="{color}" stroke-width="1.6" class="star-svg">'
+            f'{star_path}'
+            f'<path d="M12 2.8v16.8L5.8 22l1.2-6.9-5-4.9 6.9-1L12 2.8z" fill="{color}"/>'
+            '</svg>'
+        )
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" '
+        f'fill="none" stroke="{color}" stroke-width="1.6" class="star-svg">{star_path}</svg>'
+    )
+
+
 # ── CSS injection ─────────────────────────────────────────────────────────────
 
 def inject_custom_css() -> None:
@@ -82,12 +146,12 @@ def inject_custom_css() -> None:
 
     /* ── Global Reset / Dark Background ───────────────────────── */
     html, body, .stApp {
-        background-color: #080808 !important;
+        background-color: #000000 !important;
         color: #DADADA !important;
         font-family: 'Inter', sans-serif;
     }
     [data-testid="stSidebar"] {
-        background-color: #0F0F0F !important;
+        background-color: #000000 !important;
         border-right: 1px solid #1e1e1e;
     }
     [data-testid="stSidebar"] * { color: #DADADA !important; }
@@ -134,7 +198,7 @@ def inject_custom_css() -> None:
 
     /* ── Query Panel ────────────────────────────────────────────── */
     .cm-query-panel {
-        background: #111118;
+        background: #000000;
         border: 1px solid #222233;
         border-radius: 14px;
         padding: 20px 22px;
@@ -156,7 +220,7 @@ def inject_custom_css() -> None:
     [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlockBorderWrapper"] {
         border-color: #222233 !important;
         border-radius: 14px !important;
-        background: #111118 !important;
+        background: #000000 !important;
         padding: 2px !important;
     }
     [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlockBorderWrapper"]:hover {
@@ -193,6 +257,21 @@ def inject_custom_css() -> None:
     .stars    { color: #F5C518; font-size: 0.95em; letter-spacing: 1px; }
     .rating-n { color: #F5C518; font-weight: 700; font-size: 1.05em; }
     .vote-c   { color: #666;    font-size: 0.82em; }
+    .star-row  { display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; }
+    .star-svg  { display: inline-block; vertical-align: middle; }
+    .just-source {
+        display: inline-block;
+        margin-right: 8px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        border: 1px solid #2a2a3a;
+        background: rgba(255,255,255,0.03);
+        color: #9da2b3;
+        font-size: 0.68em;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+    }
 
     /* ── Justification Box ──────────────────────────────────────── */
     .just-box {
@@ -216,7 +295,7 @@ def inject_custom_css() -> None:
     }
     .score-track {
         flex: 1;
-        background: #1e1e1e;
+        background: #000000;
         border-radius: 4px;
         height: 5px;
         overflow: hidden;
@@ -251,7 +330,7 @@ def inject_custom_css() -> None:
     /* ── Streamlit widget overrides ─────────────────────────────── */
     .stTextInput  > div > div > input,
     .stTextArea   > div > div > textarea {
-        background: #111118 !important;
+        background: #000000 !important;
         color: #DDD !important;
         border: 1px solid #2a2a3a !important;
         border-radius: 8px !important;
@@ -260,14 +339,15 @@ def inject_custom_css() -> None:
     .stTextArea   > div > div > textarea:focus {
         border-color: #F5C518 !important;
         box-shadow: 0 0 0 2px rgba(245,197,24,0.15) !important;
+        background: #000000 !important;
     }
     .stSelectbox > div > div {
-        background: #111118 !important;
+        background: #000000 !important;
         border: 1px solid #2a2a3a !important;
         border-radius: 8px !important;
     }
     div[data-testid="stExpander"] {
-        background: #0d0d14 !important;
+        background: #000000 !important;
         border: 1px solid #1e1e2e !important;
         border-radius: 8px !important;
     }
@@ -289,7 +369,7 @@ def inject_custom_css() -> None:
 
     /* ── Favourite item ─────────────────────────────────────────── */
     .fav-row {
-        background: #111118;
+        background: #000000;
         border: 1px solid #1e1e2e;
         border-radius: 7px;
         padding: 7px 10px;
@@ -328,6 +408,42 @@ def inject_custom_css() -> None:
         color: #F5C518 !important;
         border-bottom: 2px solid #F5C518 !important;
     }
+
+    /* ── Buttons ────────────────────────────────────────────────── */
+    div.stButton > button,
+    div.stDownloadButton > button {
+        background-color: #000000 !important;
+        color: #DADADA !important;
+        border: 1px solid #2a2a3a !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        transition: all 0.25s ease !important;
+        width: 100% !important;
+    }
+    div.stButton > button:hover,
+    div.stDownloadButton > button:hover {
+        border-color: #F5C518 !important;
+        color: #F5C518 !important;
+        background-color: #000000 !important;
+    }
+    /* Primary button style */
+    div.stButton > button[kind="primary"],
+    div.stDownloadButton > button[kind="primary"] {
+        background: #F5C518 !important;
+        color: #000 !important;
+        border: none !important;
+    }
+    div.stButton > button[kind="primary"]:hover,
+    div.stDownloadButton > button[kind="primary"]:hover {
+        background: #FFD700 !important;
+        box-shadow: 0 0 20px rgba(245,197,24,0.3) !important;
+    }
+
+    /* ── Hide Streamlit Elements ────────────────────────────────── */
+    header[data-testid="stHeader"] { background: rgba(0,0,0,0) !important; }
+    [data-testid="stDecoration"] { display: none; }
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -425,7 +541,7 @@ def render_hero_section(df=None) -> None:
                 with cols[i]:
                     st.image(
                         get_poster_url(str(row.get("poster_path", "")), "w185"),
-                        use_container_width=True,
+                        width="stretch",
                     )
                     year_txt = int(row.get("release_year", 0)) if pd.notna(row.get("release_year", 0)) else current_year
                     popularity_txt = float(row.get("popularity", 0) or 0)
@@ -517,7 +633,7 @@ def render_query_panel(movie_titles: list) -> tuple:
                 chip,
                 key=f"g_{chip}",
                 type="primary" if sel else "secondary",
-                use_container_width=True,
+                width="stretch",
             ):
                 if sel:
                     st.session_state.selected_chips.discard(chip)
@@ -535,7 +651,7 @@ def render_query_panel(movie_titles: list) -> tuple:
                 chip,
                 key=f"m_{chip}",
                 type="primary" if sel else "secondary",
-                use_container_width=True,
+                width="stretch",
             ):
                 if sel:
                     st.session_state.selected_chips.discard(chip)
@@ -576,14 +692,14 @@ def render_query_panel(movie_titles: list) -> tuple:
         submitted = st.button(
             "Find My Movies",
             type="primary",
-            use_container_width=True,
+            width="stretch",
             key="submit_btn",
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col_clear:
         st.markdown("<div style='padding-top:22px'>", unsafe_allow_html=True)
-        if st.button("Clear", use_container_width=True, key="clear_query"):
+        if st.button("Clear", width="stretch", key="clear_query"):
             st.session_state.selected_chips = set()
             st.session_state.pop("movie_selectbox", None)
             st.session_state.pop("free_text_input",  None)
@@ -647,7 +763,12 @@ def render_stars(vote_average: float) -> str:
     full  = int(half_stars)
     half  = 1 if (half_stars - full) >= 0.5 else 0
     empty = 5 - full - half
-    return "★" * full + ("⯨" * half) + "☆" * empty
+    stars_html = []
+    stars_html.extend(_star_svg("full") for _ in range(full))
+    if half:
+        stars_html.append(_star_svg("half"))
+    stars_html.extend(_star_svg("empty") for _ in range(empty))
+    return f'<span class="star-row">{"".join(stars_html)}</span>'
 
 
 def format_runtime(minutes: int) -> str:
@@ -713,9 +834,9 @@ def render_movie_card(
             rank_txt = {1: "#1  BEST MATCH", 2: "#2", 3: "#3"}.get(rank, f"#{rank}")
             st.markdown(f'<span class="{rank_css}">{rank_txt}</span>', unsafe_allow_html=True)
         with col_save:
-            heart = "Saved" if is_favourite else "Save"
+            heart = "♥" if is_favourite else "♡"
             tip   = "Remove from favourites" if is_favourite else "Save to favourites"
-            if st.button(heart, key=f"save_{movie.movie_id}_{rank}", help=tip):
+            if st.button(heart, key=f"save_{movie.movie_id}_{rank}", help=tip, type="primary" if is_favourite else "secondary"):
                 save_clicked = True
 
         # ── Poster + Info ─────────────────────────────────────────
@@ -724,7 +845,7 @@ def render_movie_card(
         with col_poster:
             st.image(
                 get_poster_url(movie.poster_path, "w185"),
-                use_container_width=True,
+                width="stretch",
             )
 
         with col_info:
@@ -742,15 +863,15 @@ def render_movie_card(
             lang_css  = lang_info["badge_css"]
             st.markdown(
                 f'<span class="chip {lang_css}">{lang_info["label"]}</span>'
-                f'<span class="chip chip-year">Year {movie.year}</span>'
-                f'<span class="chip chip-runtime">Runtime {format_runtime(movie.runtime)}</span>',
+                f'<span class="chip chip-year">{_svg_icon("calendar", "#888")} {movie.year}</span>'
+                f'<span class="chip chip-runtime">{_svg_icon("clock", "#888")} {format_runtime(movie.runtime)}</span>',
                 unsafe_allow_html=True,
             )
 
             # Star rating
             stars = render_stars(movie.vote_average)
             st.markdown(
-                f'<span class="stars">{stars}</span>&nbsp;'
+                f'{stars}&nbsp;'
                 f'<span class="rating-n">{movie.vote_average:.1f}</span>&nbsp;'
                 f'<span class="vote-c">({movie.vote_count:,} votes)</span>',
                 unsafe_allow_html=True,
@@ -784,8 +905,9 @@ def render_movie_card(
 
         # ── Why you'll love this ──────────────────────────────────
         if show_justification and movie.justification:
+            source_label = "Gemini" if str(getattr(movie, "justification_source", "")).startswith("gemini:") else "Fallback"
             st.markdown(
-                f'<div class="just-box">Why it matches: &nbsp;{strip_emoji(movie.justification)}</div>',
+                f'<div class="just-box"><span class="just-source">{source_label}</span>Why it matches: &nbsp;{strip_emoji(movie.justification)}</div>',
                 unsafe_allow_html=True,
             )
 
@@ -843,68 +965,63 @@ def render_sidebar_filters() -> dict:
         language_codes = [lang_map[l] for l in selected] or ["hi", "ta", "te", "ml", "kn"]
 
     st.markdown("---")
-    st.markdown('<div class="cm-label">Classic Movies</div>', unsafe_allow_html=True)
+    st.markdown('<div class="cm-label">Discovery Mode</div>', unsafe_allow_html=True)
+    
     include_old_movies = st.toggle(
-        "Include classic movies (1990s / earlier)",
+        "Classic Mode (1990s and older)",
         value=False,
         key="include_old_movies",
-        help="Off: recent releases only. On: include 1990s and classic films.",
+        help="Turn this on to strictly search for 1990s and older Bollywood and South Indian films.",
     )
-
-    st.markdown("---")
-    all_decades = ["2020s", "2010s", "2000s", "1990s", "Classic (<1990)"]
-    decade_filter = all_decades if include_old_movies else ["2020s", "2010s"]
-
-    st.markdown("---")
-    st.markdown('<div class="cm-label">Diversity</div>', unsafe_allow_html=True)
+    
     diversify = st.toggle(
-        "Diversify results (MMR)",
+        "Diversify Results (MMR)",
         value=False,
         key="diversify",
-        help="Applies Maximal Marginal Relevance to reduce similar-looking results",
+        help="Reduces repetitive results by ensuring variety in the recommendations.",
     )
+
+    # Calculate decade filter based on classic mode
+    decade_filter = ["1990s", "Classic (<1990)"] if include_old_movies else ["2020s", "2010s", "2000s"]
 
     return {
         "language_codes": language_codes,
         "decade_filter":  decade_filter,
+        "include_old_movies": include_old_movies,
         "diversify":      diversify,
     }
 
 
-# ── Sidebar AI Settings ─────────────────────────────────────────────────────
-
 def render_settings_sidebar(default_api_key: str = "") -> dict:
-    """Render the Gemini / display settings section in the sidebar."""
+    """
+    Render LLM and UI settings in the sidebar.
+    Returns: {api_key, show_justifications, show_score_bar}
+    """
     st.markdown("---")
-    st.markdown('<div class="cm-label">AI JUSTIFICATION</div>', unsafe_allow_html=True)
+    st.markdown('<div class="cm-label">Engine Settings</div>', unsafe_allow_html=True)
 
-    if "gemini_api_key" not in st.session_state:
-        st.session_state.gemini_api_key = default_api_key
-
-    with st.expander("Gemini settings", expanded=False):
-        st.caption(
-            "Gemini writes the short Why it matches line below each card. "
-            "Leave the key blank to fall back to the built-in template."
-        )
+    with st.expander("AI & UI Settings", expanded=False):
         api_key = st.text_input(
             "Gemini API Key",
+            value=default_api_key,
             type="password",
-            key="gemini_api_key",
-            placeholder="Paste Gemini API key",
+            help="Enter your Gemini API key to enable AI-powered justifications. If left blank, it uses the local fallback.",
         )
+
         show_justifications = st.toggle(
-            "Show LLM justifications",
+            "Show AI Justifications",
             value=True,
-            key="show_justifications",
+            help="Explain why each movie was recommended based on your query.",
         )
+
         show_score_bar = st.toggle(
-            "Show match score bar",
+            "Show Match Score",
             value=True,
-            key="show_score_bar",
+            help="Show a progress bar indicating how well the movie matches your search.",
         )
 
     return {
-        "api_key": api_key.strip(),
+        "api_key": api_key,
         "show_justifications": show_justifications,
         "show_score_bar": show_score_bar,
     }
@@ -920,14 +1037,14 @@ def render_favourites_sidebar(favourites: list) -> str | None:
     st.markdown("---")
     count = len(favourites)
     st.markdown(
-        f'<div class="cm-label">MY FAVOURITES &nbsp;<span style="color:#F5C518">{count}</span></div>',
+        f'<div class="cm-label">{_svg_icon("heart", "#F5C518")} MY FAVOURITES &nbsp;<span style="color:#F5C518">{count}</span></div>',
         unsafe_allow_html=True,
     )
 
     removed_id = None
 
     if not favourites:
-        st.caption("No favourites yet. Click Save on any card to save.")
+        st.caption("No favourites yet. Click ♡ on any card to save.")
         return None
 
     # Show most recently added first (up to 5 preview items)
@@ -964,11 +1081,11 @@ def render_favourites_sidebar(favourites: list) -> str | None:
         data=csv_data,
         file_name="cinmatch_favourites.csv",
         mime="text/csv",
-        use_container_width=True,
+        width="stretch",
         key="export_fav_csv",
     )
 
-    if st.button("Clear All", use_container_width=True, key="clear_all_fav"):
+    if st.button("Clear All", width="stretch", key="clear_all_fav"):
         removed_id = "__CLEAR_ALL__"
 
     return removed_id

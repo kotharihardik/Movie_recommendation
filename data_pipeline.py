@@ -11,6 +11,7 @@ Run once at startup; subsequent calls skip re-indexing if the DB is populated.
 import ast
 import math
 import os
+import unicodedata
 
 import pandas as pd
 import chromadb
@@ -46,6 +47,18 @@ def _safe_parse_list(val) -> list:
         return result if isinstance(result, list) else []
     except (ValueError, SyntaxError):
         return []
+
+
+def _normalize_title_text(value) -> str:
+    """Convert a movie title to ASCII-safe text while keeping spacing readable."""
+    if value is None or (isinstance(value, float) and math.isnan(value)):
+        return ""
+    text = str(value).strip()
+    if not text:
+        return ""
+    text = unicodedata.normalize("NFKD", text)
+    text = text.encode("ascii", "ignore").decode("ascii")
+    return " ".join(text.split())
 
 
 # ── Core Functions ────────────────────────────────────────────────────────────
@@ -105,6 +118,7 @@ def clean_and_filter(
     df["release_date"]  = df.get("release_date",   pd.Series()).fillna("2000-01-01").astype(str)
     df["title"]         = df.get("title",          pd.Series()).fillna("Unknown").astype(str)
     df["original_title"]= df.get("original_title", pd.Series()).fillna("").astype(str)
+    df["title"]         = df["title"].apply(_normalize_title_text)
 
     # ── Extract year ──────────────────────────────────────────────
     df["release_year"] = (

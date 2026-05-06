@@ -79,7 +79,7 @@ def init_session_state() -> None:
         st.session_state.favourites = load_favourites()
 
 
-def run_search(collection, df, filters, selected_movie, free_text, selected_chips, top_n, api_key, show_justifications):
+def run_search(collection, df, filters, selected_movie, free_text, selected_chips, top_n, api_key, show_justifications, include_old_movies=False):
     """Execute retrieval + justification for the current query and filters."""
     with st.spinner("Scanning 25,000+ films…"):
         results, query_bundle = get_recommendations(
@@ -91,6 +91,7 @@ def run_search(collection, df, filters, selected_movie, free_text, selected_chip
             top_n          = top_n,
             min_rating     = 5.0,
             decade_filter  = filters["decade_filter"],
+            include_old_movies = include_old_movies,
             diversify      = filters["diversify"],
             df             = df,
         )
@@ -148,7 +149,17 @@ def main() -> None:
         st.markdown("---")
 
         filters  = render_sidebar_filters()
-        settings = render_settings_sidebar(default_api_key=DEFAULT_GEMINI_API_KEY)
+        # settings = render_settings_sidebar(default_api_key=DEFAULT_GEMINI_API_KEY)
+        # if not settings["api_key"]:
+        #     st.warning("LLM justifications are using the local fallback because no Gemini key is active.")
+        
+        # Hardcode settings defaults since UI is removed
+        settings = {
+            "api_key": DEFAULT_GEMINI_API_KEY,
+            "show_justifications": True,
+            "show_score_bar": True
+        }
+
         removed_id = render_favourites_sidebar(st.session_state.favourites)
 
         # Handle removal / clear-all
@@ -202,6 +213,7 @@ def main() -> None:
             free_text=free_text,
             selected_chips=selected_chips,
             top_n=top_n,
+            include_old_movies=filters.get("include_old_movies", False),
             api_key=settings["api_key"],
             show_justifications=settings["show_justifications"],
         )
@@ -234,6 +246,7 @@ def main() -> None:
                 free_text=free_text,
                 selected_chips=selected_chips,
                 top_n=top_n,
+                include_old_movies=filters.get("include_old_movies", False),
                 api_key=settings["api_key"],
                 show_justifications=settings["show_justifications"],
             )
