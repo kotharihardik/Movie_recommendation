@@ -1,15 +1,15 @@
-# Statistical Methods in Artificial Intelligence
 
-## T14.4 -- CineMatch India: A Personalised Bollywood and South Indian Movie Recommender
+## Assignment - 3
 
-**Assignment 3 | IIIT Hyderabad | Academic Year 2025-26**
+# T14.4 -- CineMatch India: A Personalised Bollywood and South Indian Movie Recommender
+
 
 **Tech Stack:** Python, Streamlit, sentence-transformers (all-MiniLM-L6-v2), scikit-learn, TMDB API, Gemini 1.5 Flash
 
 **Team:**
 
 - **Hardik Kothari** -- 2025201046 -- hardik.k@students.iiit.ac.in
-- **Gaurav Patel** -- 2025201065 -- gaurav.patel@students.iiit.ac.in
+- **Gaurav Patel** -- 2025201065 -- gauravkumar.patel@students.iiit.ac.in
 - **Parv Shah** -- 2025201093 -- parv.shah@students.iiit.ac.in
 
 **Links:** [GitHub Repo](https://github.com/) | [Live App](https://huggingface.co/spaces/) | [Video Demo](https://youtu.be/)

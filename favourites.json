@@ -50,5 +50,132 @@
     "tagline": "",
     "runtime": 212,
     "overview": "A mysterious traveler slips into the heart of Karachi's underbelly and rises through its ranks with lethal precision, only to tear the notorious ISI-Underworld nexus apart from within."
+  },
+  {
+    "movie_id": "872906",
+    "title": "Jawan",
+    "original_title": "जवान",
+    "language": "hi",
+    "year": 2023,
+    "vote_average": 7.097,
+    "vote_count": 318,
+    "director": "Atlee",
+    "cast": [
+      "Shah Rukh Khan",
+      "Nayanthara",
+      "Vijay Sethupathi",
+      "Deepika Padukone",
+      "Sanjay Dutt"
+    ],
+    "genres": [
+      "Action",
+      "Thriller"
+    ],
+    "poster_path": "/jFt1gS4BGHlK8xt76Y81Alp4dbt.jpg",
+    "tagline": "",
+    "runtime": 169,
+    "overview": "An emotional journey of a prison warden, driven by a personal vendetta while keeping up to a promise made years ago, recruits inmates to commit outrageous crimes that shed light on corruption and injustice, in an attempt to get even with his past,  and that leads him to an unexpected reunion."
+  },
+  {
+    "movie_id": "1306845",
+    "title": "Jaat",
+    "original_title": "जाट",
+    "language": "hi",
+    "year": 2025,
+    "vote_average": 6.113,
+    "vote_count": 31,
+    "director": "Gopichand Malineni",
+    "cast": [
+      "Sunny Deol",
+      "Randeep Hooda",
+      "Saiyami Kher",
+      "Regina Cassandra",
+      "Vineet Kumar Singh"
+    ],
+    "genres": [
+      "Crime",
+      "Action",
+      "Thriller"
+    ],
+    "poster_path": "/guTflsCTgLNqTbpHTi9gJANk1Rf.jpg",
+    "tagline": "",
+    "runtime": 153,
+    "overview": "A mysterious stranger journeys to a remote town controlled by a callous crime lord, with one violent mission — restoring justice to its people."
+  },
+  {
+    "movie_id": "784651",
+    "title": "Fighter",
+    "original_title": "फाइटर",
+    "language": "hi",
+    "year": 2024,
+    "vote_average": 6.141,
+    "vote_count": 156,
+    "director": "Siddharth Anand",
+    "cast": [
+      "Hrithik Roshan",
+      "Deepika Padukone",
+      "Anil Kapoor",
+      "Karan Singh Grover",
+      "Sanjeeda Sheikh"
+    ],
+    "genres": [
+      "Action",
+      "Drama"
+    ],
+    "poster_path": "/zqFuriKJ6pYDvf72kXNLONnuE8k.jpg",
+    "tagline": "",
+    "runtime": 167,
+    "overview": "As India faces a militant attack in Kashmir, the country’s best combat aviators join forces under a reckless yet brilliant squadron leader to form 'Air Dragons', faces mortal dangers and their inner demons."
+  },
+  {
+    "movie_id": "720557",
+    "title": "Tiger 3",
+    "original_title": "Tiger 3",
+    "language": "hi",
+    "year": 2023,
+    "vote_average": 5.8,
+    "vote_count": 60,
+    "director": "Maneesh Sharma",
+    "cast": [
+      "Salman Khan",
+      "Katrina Kaif",
+      "Emraan Hashmi",
+      "Simran",
+      "Revathi"
+    ],
+    "genres": [
+      "Action",
+      "Adventure",
+      "Thriller"
+    ],
+    "poster_path": "/hVYSsDvXPkTNE9WNOUQzbn2Imvj.jpg",
+    "tagline": "This time, it's personal",
+    "runtime": 155,
+    "overview": "Following the events of Tiger Zinda Hai, War, and Pathaan, Avinash Singh Rathore returns as Tiger but this time the battle is within. He has to choose between his country or family as an old enemy is after his life, who claims that his family was killed by Tiger. He holds Tiger captive in Pakistan a"
+  },
+  {
+    "movie_id": "41109",
+    "title": "Don 2",
+    "original_title": "Don 2",
+    "language": "hi",
+    "year": 2011,
+    "vote_average": 6.948,
+    "vote_count": 260,
+    "director": "Farhan Akhtar",
+    "cast": [
+      "Shah Rukh Khan",
+      "Priyanka Chopra Jonas",
+      "Boman Irani",
+      "Kunal Kapoor",
+      "Lara Dutta"
+    ],
+    "genres": [
+      "Action",
+      "Thriller"
+    ],
+    "poster_path": "/2gBM8c36HIwn4vc2UuMeliqiCKY.jpg",
+    "tagline": "The Chase Continues",
+    "runtime": 139,
+    "overview": "Having conquered the Asian underworld, crime boss Don sets in motion a plan that will give him dominion over Europe."
   }
 ]
