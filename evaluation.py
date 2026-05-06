@@ -1,53 +1,4 @@
-"""
-evaluate_engine.py
-------------------
-CineMatch India — Evaluation Metrics
-=====================================
-Offline evaluation for submission and TA defense.
 
-This script supports two evaluation modes:
-
-1. Human-curated benchmark labels for a fixed 15-anchor set.
-2. Proxy relevance labels for sampled anchors when benchmark labels are not
-   available.
-
-The benchmark path is the one to use for reporting quantitative results: each
-anchor movie is paired with 10 manually curated relevant titles, and metrics are
-computed by comparing the system's top-10 recommendations against that ground
-truth. The proxy path remains available for exploratory debugging, but it should
-be presented as an approximation, not as a held-out gold standard.
-
-Primary ranking metric:
-    - NDCG@10  (rank-aware, supports graded relevance)
-
-Secondary ranking metrics:
-    - Precision@K, Recall@K, MRR@K, MAP@K
-
-Behavioral diagnostics:
-    - ILD (intra-list diversity)
-    - Fame bias (mean fame score of recommendations vs catalogue baseline)
-    - Coverage (unique recommended items / catalogue size)
-
-6 commonly used metrics in retrieval and recommendation literature:
-
-    1. Precision@K   — fraction of top-K results that are relevant
-    2. Recall@K      — fraction of all relevant items retrieved in top-K
-    3. MRR@K         — reciprocal rank of the first relevant result
-    4. MAP@K         — mean average precision (ranks all relevant items)
-    5. NDCG@K        — rank-aware metric with graded relevance (gold standard)
-    6. ILD           — Intra-List Diversity (pairwise cosine distance)
-
-References:
-    Weaviate Retrieval Evaluation Guide (2024) — weaviate.io/blog/retrieval-evaluation-metrics
-    Shaped.ai — evaluating-recommendation-systems-map-mmr-ndcg
-    arxiv 2312.16015 — Comprehensive Survey of Evaluation Techniques (2024)
-    Kaminskas & Bridge, ACM TiiS 7(1), 2016 — diversity metric (ILD)
-
-Usage:
-    from evaluate_engine import run_evaluation
-    run_evaluation()                                        # sampled proxy evaluation
-    run_evaluation(queries=[("3 Idiots", ["hi"], "test")]) # custom
-"""
 
 from __future__ import annotations
 
@@ -62,7 +13,6 @@ import numpy as np
 import pandas as pd
 
 
-# ─── Terminal colours ────────────────────────────────────────────────────────
 B = "\033[1m"; R = "\033[0m"; C = "\033[96m"; G = "\033[92m"
 Y = "\033[93m"; RE = "\033[91m"; D = "\033[2m"; W = "\033[97m"
 
@@ -113,8 +63,6 @@ def _bootstrap_ci(values: list[float], n_boot: int = 1000, alpha: float = 0.05, 
     hi = float(np.quantile(boots, 1 - alpha / 2))
     return lo, hi
 
-
-# ─── Ground-truth builder ────────────────────────────────────────────────────
 
 MANUAL_GROUND_TRUTH = {
     "Don": {"relevant": ["Don 2", "Aankhen", "Zanjeer", "The Don", "Eklavya: The Royal Guard", "Race", "Dhoom 2", "Krrish", "Raees", "Badlapur", "Om Shanti Om", "D-Day"]},
@@ -245,7 +193,6 @@ def _build_ground_truth(df: pd.DataFrame, anchor_idx: int) -> dict:
     return {"relevant": rel, "highly_relevant": hi, "anchor_genres": ag, "anchor_keywords": ak, "anchor_cast": ac}
 
 
-# ─── The 6 core metrics ──────────────────────────────────────────────────────
 
 def precision_at_k(retrieved: list, relevant: set, k: int) -> float:
     """P@K = |top-K ∩ relevant| / K"""
@@ -491,7 +438,6 @@ def _build_sampled_queries(
     return queries
 
 
-# ─── Engine helpers ──────────────────────────────────────────────────────────
 
 def _import_engine():
     try:
@@ -549,8 +495,6 @@ def _normalize_query_entry(query, fallback_rank: int) -> dict[str, object]:
         "anchor_idx": None,
     }
 
-
-# ─── Main evaluation runner ──────────────────────────────────────────────────
 
 def run_evaluation(
     queries: Optional[list] = None,
@@ -702,7 +646,6 @@ def run_evaluation(
         p, rc, mr, ap, nd = per_k[primary_k]
         metrics = {"P": p, "R": rc, "MRR": mr, "MAP": ap, "NDCG": nd, "ILD": dv}
 
-    # ── Aggregate summary ────────────────────────────────────────────────────
     means = {k: _mean_std(v)[0] for k, v in agg.items() if v}
 
     if evaluated_count == 0:
@@ -711,7 +654,6 @@ def run_evaluation(
     return means
 
 
-# ─── CLI ─────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import os
     from data_pipeline import run_full_pipeline

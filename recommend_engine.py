@@ -1,26 +1,3 @@
-"""
-recommend_engine.py
--------------------
-CineMatch India — Pure-Python recommendation engine.
-
-Signals used:
-    1. TF-IDF content model  (weighted soup: keywords × genres × cast × director × overview)
-    2. Semantic embedding model  (all-MiniLM-L6-v2 on structured descriptions)
-  3. SVD + KNN collaborative model (latent keyword co-occurrence)
-  4. Fame Score  (billing-weighted cast/director appearance frequency)
-  5. Hybrid fusion of all signals
-
-Description format fed to the semantic model:
-  [TONE PREFIX] [OVERVIEW] Starring: [TOP-2 CAST]. Themes: [KEYWORDS repeated].
-
-Model selection:
-    1. sentence-transformers/all-MiniLM-L6-v2   (single fixed model)
-
-Query modes:
-  • Movie title only        → semantic recommender (TF-IDF + embed + CF blended)
-  • Free-text / mood / chips → hybrid with text embedding gate
-  • Combined                → anchor movie + free-text embedding blend
-"""
 
 from __future__ import annotations
 
