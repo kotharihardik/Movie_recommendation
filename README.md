@@ -1,6 +1,6 @@
 ## Assignment - 3
 
-# T14.4 -- CineMatch India: A Personalised Bollywood and South Indian Movie Recommender
+# T14.4 -- Bollywood and South Indian Movie Recommender
 
 **Team:**
 
@@ -8,16 +8,13 @@
 - **Gaurav Patel** -- 2025201065 -- <gauravkumar.patel@students.iiit.ac.in>
 - **Parv Shah** -- 2025201093 -- <parv.shah@students.iiit.ac.in>
 
-<span style="color:blue">
-
 **Links:**  
-- [GitHub Repo](https://github.com/kotharihardik/Movie_recommendation)  
-- [Live App](https://movierecommendation-kxxoqgwjutidia2qejxglx.streamlit.app/)  
-- [Video Demo](https://youtu.be/)
+- [GitHub Repo](https://github.com/kotharihardik/Movie_recommendation) — https://github.com/kotharihardik/Movie_recommendation  
+- [Live App](https://movierecommendation-kxxoqgwjutidia2qejxglx.streamlit.app/) — https://movierecommendation-kxxoqgwjutidia2qejxglx.streamlit.app/  
+- [Video Demo](https://www.youtube.com/watch?v=JTca_iBlRQQ) — https://www.youtube.com/watch?v=JTca_iBlRQQ
 
-</span>
-
-**Tech Stack:** Python, Streamlit, sentence-transformers (all-MiniLM-L6-v2), scikit-learn, TMDB API, DeepSeek via Hugging Face router
+**Tech Stack:** 
+Python, Streamlit, sentence-transformers (all-MiniLM-L6-v2), scikit-learn, TMDB API, DeepSeek via Hugging Face router
 ---
 
 ## 1. Introduction
@@ -32,7 +29,8 @@ Recommendation systems are the most widely deployed ML technique in industry. Th
 
 **Derived field 1 — Fame Score** (replaces popularity):
 
-$$\text{FameScore}_{i} = \sum_{p=1}^{3} w_p \cdot \log(1 + \text{AppearanceCount}(\text{cast}_p)) + 0.45 \cdot \log(1 + \text{AppearanceCount}(\text{director}))$$
+$$\text{FameScore}_{i} = \sum_{p=1}^{3} w_p \cdot \log(1 + \text{AppearanceCount}(\text{cast}_p))$$
+$$\phantom{\text{FameScore}_{i} =\;} + 0.45 \cdot \log(1 + \text{AppearanceCount}(\text{director}))$$
 
 Billing-position weights: $w_1=1.0,\ w_2=0.7,\ w_3=0.5$. Counts over films with vote\_count > 50, Min-Max scaled to [0, 1]. Rewards established talent, not trending noise.
 
@@ -95,7 +93,8 @@ Softly prefers era-matched films without hard cutoffs.
 
 Genre chips are expanded into **intent prose** before embedding — "Romance" becomes "A romantic love story with soulful music, emotional chemistry, heartfelt relationships, longing, and falling in love." Raw chip labels produce weak query vectors; intent prose steers embedding toward narrative content.
 
-$$\text{Score} = 0.56\cdot s_\text{sim} + 0.14\cdot s_\text{chip} + 0.12\cdot s_\text{genre} + 0.10\cdot s_\text{vc} + 0.05\cdot s_\text{fame} + 0.03\cdot s_\text{rating}$$
+$$\text{Score} = 0.56\cdot s_\text{sim} + 0.14\cdot s_\text{chip} + 0.12\cdot s_\text{genre} + 0.10\cdot s_\text{vc}$$
+$$\phantom{\text{Score} =\;} + 0.05\cdot s_\text{fame} + 0.03\cdot s_\text{rating}$$
 
 A genre-tag exact-match fallback fires if the top result fails a genre-hit check, ensuring genre correctness is never sacrificed for semantic fluency.
 
@@ -111,7 +110,11 @@ DeepSeek via the Hugging Face router generates one sentence (max 28 words) per c
 
 ## 4. Results
 
-### 4.1 Quantitative Results
+### 4.1 Evaluation Setup
+
+Recommendation systems have no universal ground truth — there is no single correct output for a given query, and user preference is inherently subjective. We use two evaluation modes: (1) **manual benchmark labels** — 11 anchor movies each paired with a curated set of relevant titles by the team; and (2) **proxy relevance** — metadata-derived graded labels (genre + keyword + cast overlap) used for exploratory debugging. Mode 1 is the primary result reported below. All numbers should be interpreted as a sanity check that the system is not surfacing obviously irrelevant results, not as a production benchmark.
+
+### 4.2 Quantitative Results
 
 **Metrics used (evaluated at K=10):**
 
@@ -136,7 +139,7 @@ Evaluated on 11 manually curated queries:
 
 **Caveat:** Metrics are computed against proxy/manual labels, not real user interaction logs — best interpreted as a sanity check, not a production benchmark.
 
-### 4.2 Qualitative Results
+### 4.3 Qualitative Results
 
 **Query A — Free text:** *"Intense survival-action movie with relentless enemies and nonstop tension"*
 
@@ -150,7 +153,11 @@ Results: War · Jawan · Fighter · Sooryavanshi · An Action Hero · Attack · 
 
 Precisely the correct peer cluster: YRF spy-universe (War, Tiger 3, War 2), large-budget patriotic action (Jawan, Fighter, Sooryavanshi), franchise action (Race 2). Director-match and cast-Jaccard (SRK, Hrithik, Akshay) drive ranking. Franchise boost surfaces War 2 despite lower vote count.
 
-### 4.3 Ablation
+### 4.4 App Screenshots
+
+![Fig 1 — Main dashboard: search bar, sidebar language/era filters, and favourites panel.](Image/1.png){width=48%}\ ![Fig 2 — Results grid: recommendation cards showing match score, metadata, and AI justification.](Image/4.png){width=48%}
+
+### 4.5 Ablation
 
 | Configuration | Qualitative impact |
 |---|---|
@@ -176,9 +183,17 @@ Precisely the correct peer cluster: YRF spy-universe (War, Tiger 3, War 2), larg
 - **Cold-start for niche films.** Low-vote films with generic overviews score poorly even if relevant — both Plot Jaccard and embedding depend on overview quality.
 - **Proxy evaluation only.** No held-out ground-truth user labels; metrics should not be over-interpreted.
 
+## Acknowledgements
+
+We used the following LLM tools during this project:
+
+- **Claude (Anthropic)** — assisted with code scaffolding, debugging, and report drafting.
+
+All evaluation, metric computation, and analysis are our own.
+
 ## References
 
-1. Reimers & Gurevych (2019). Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. *EMNLP 2019*.
+1. Reimers & Gurevych (2019). Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. *EMNLP 2019*. arXiv:1908.10084.
 2. Nogueira & Cho (2019). Passage Re-ranking with BERT. *arXiv:1901.04085*.
 3. Carbonell & Goldstein (1998). The use of MMR, diversity-based reranking for reordering documents. *SIGIR 1998*.
 4. Kaminskas & Bridge (2016). Diversity, Serendipity, Novelty, and Coverage. *ACM TiiS 7(1)*.
